@@ -1,0 +1,27 @@
+{
+  "files": {
+    "main.css": "/static/css/main.2ebaa92e.chunk.css",
+    "main.js": "/static/js/main.cda9a0c7.chunk.js",
+    "main.js.map": "/static/js/main.cda9a0c7.chunk.js.map",
+    "runtime-main.js": "/static/js/runtime-main.05c535c9.js",
+    "runtime-main.js.map": "/static/js/runtime-main.05c535c9.js.map",
+    "static/css/2.de1632da.chunk.css": "/static/css/2.de1632da.chunk.css",
+    "static/js/2.4abefa17.chunk.js": "/static/js/2.4abefa17.chunk.js",
+    "static/js/2.4abefa17.chunk.js.map": "/static/js/2.4abefa17.chunk.js.map",
+    "index.html": "/index.html",
+    "precache-manifest.4a578be46f6cc8e37f4b3034c447da4a.js": "/precache-manifest.4a578be46f6cc8e37f4b3034c447da4a.js",
+    "service-worker.js": "/service-worker.js",
+    "static/css/2.de1632da.chunk.css.map": "/static/css/2.de1632da.chunk.css.map",
+    "static/css/main.2ebaa92e.chunk.css.map": "/static/css/main.2ebaa92e.chunk.css.map",
+    "static/js/2.4abefa17.chunk.js.LICENSE.txt": "/static/js/2.4abefa17.chunk.js.LICENSE.txt",
+    "static/media/cardboard-texture.jpg": "/static/media/cardboard-texture.9a8bc323.jpg",
+    "static/media/styles.css": "/static/media/leaf-right.dee90f58.png"
+  },
+  "entrypoints": [
+    "static/js/runtime-main.05c535c9.js",
+    "static/css/2.de1632da.chunk.css",
+    "static/js/2.4abefa17.chunk.js",
+    "static/css/main.2ebaa92e.chunk.css",
+    "static/js/main.cda9a0c7.chunk.js"
+  ]
+}

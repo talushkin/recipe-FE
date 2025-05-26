@@ -3,7 +3,7 @@ import dayjs from "dayjs";
 import { useTranslation } from "react-i18next";
 import { translateDirectly } from "./translateAI";
 import { useDispatch } from "react-redux";
-import { addCategoryThunk, reorderCategoriesThunk, delCategoryThunk } from "../store/dataSlice";
+import { addCategoryThunk, reorderCategoriesThunk, delCategoryThunk } from "../store/dataSlice.ts";
 
 import {
   DndContext,

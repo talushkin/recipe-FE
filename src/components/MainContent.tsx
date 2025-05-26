@@ -7,7 +7,7 @@ import { useTranslation } from "react-i18next";
 import { translateDirectly } from "./translateAI";
 import { generateImage } from "./imageAI";
 import { useDispatch } from "react-redux";
-import { addRecipeThunk, delRecipeThunk, updateRecipeThunk } from "../store/dataSlice";
+import { addRecipeThunk, delRecipeThunk, updateRecipeThunk } from "../store/dataSlice.ts";
 import {
   DndContext,
   closestCenter,

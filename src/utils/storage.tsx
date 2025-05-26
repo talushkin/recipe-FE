@@ -1,4 +1,4 @@
-// utils/storage.js
+// utils/storage.tsx
 import axios from "axios";
 import { useTranslation } from "react-i18next";
 import dayjs from "dayjs";

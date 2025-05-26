@@ -15,8 +15,26 @@ import { translateDirectly } from "./translateAI";
 
 const BASE_URL = "https://be-tan-theta.vercel.app";
 
+type Tprops = {
+  open?: boolean;
+  onClose: () => void;
+  onSave: (recipe: any) => void;
+  onDelete?: (recipe: any) => void;
+  recipe?: {
+    title?: string;
+    ingredients?: string;
+    preparation?: string;
+    imageUrl?: string;
+    _id?: string;
+  };
+  targetLang?: string;
+  type?: "edit" | "new";
+  categoryName?: string;
+  autoFill?: boolean;
+}
+
 const RecipeDialog = ({
-  open,
+  open = false,
   onClose,
   onSave,
   onDelete,
@@ -25,7 +43,7 @@ const RecipeDialog = ({
   type,
   categoryName,
   autoFill = false,
-}) => {
+}: Tprops) => {
   const { i18n, t } = useTranslation();
   const isRTL = i18n.language === "he" || i18n.language === "ar";
 
