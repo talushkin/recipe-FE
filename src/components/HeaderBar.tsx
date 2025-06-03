@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { useTranslation } from "react-i18next";
-import { Autocomplete, TextField } from "@mui/material";
+import { Autocomplete,  SelectChangeEvent,  TextField } from "@mui/material";
 import RecipeDialog from "./RecipeDialog";
 import cardboardTexture from "../assets/cardboard-texture.jpg";
 import Brightness4Icon from "@mui/icons-material/Brightness4";
@@ -10,13 +10,22 @@ import {
   Select as MuiSelect,
   MenuItem, Button
 } from "@mui/material";
+type Tprops = {
+  logo: string;
+  onHamburgerClick: () => void;
+  pages: any[];
+  toggleDarkMode: () => void;
+  desktop?: boolean;
+  isDarkMode?: boolean;
+}
+
 export default function HeaderBar({
   logo,
   onHamburgerClick,
   pages,
   toggleDarkMode,
   desktop, isDarkMode
-}) {
+}: Tprops) {
   const { t, i18n } = useTranslation();
   const [searchQuery, setSearchQuery] = useState("");
   const [filteredSuggestions, setFilteredSuggestions] = useState([]);
@@ -26,14 +35,15 @@ export default function HeaderBar({
 
   const allRecipes = pages?.flatMap((category) => category.itemPage);
 
-  const handleLanguageChange = (event) => {
+  const handleLanguageChange = (event:SelectChangeEvent<string>) => {
     const newLang = event.target.value;
+    
     setLanguage(newLang);
     i18n.changeLanguage(newLang);
     document.body.dir = newLang === "he" || newLang === "ar" ? "rtl" : "ltr";
   };
 
-  const handleSearchChange = (event, value) => {
+  const handleSearchChange = (value: string) => {
     setSearchQuery(value);
     if (!value) {
       setFilteredSuggestions([]);
@@ -143,15 +153,16 @@ export default function HeaderBar({
         {/* Right side: Search */}
         <div style={{ flex: 0, maxWidth: "400px" }}>
           <Autocomplete
+          
             freeSolo
             options={filteredSuggestions.map((page) => page.title)}
-            onInputChange={handleSearchChange}
+            onInputChange={(e)=>handleSearchChange( e.target.value!)}
             onChange={handleSelect}
             renderInput={(params) => (
               <TextField
                 {...params}
                 value={searchQuery}
-                onChange={(e) => handleSearchChange(e, e.target.value)}
+                onChange={(e) => handleSearchChange( e.target.value)}
                 label={t("search")}
                 placeholder="keywords"
                 variant="outlined"
@@ -170,7 +181,6 @@ export default function HeaderBar({
             )}
             sx={{
               maxHeight: "80px",
-              padding: "0px",
               maxWidth: "150px",
               transition: "width 0.3s ease",
               backgroundImage: `url(${cardboardTexture})`,
@@ -214,6 +224,7 @@ export default function HeaderBar({
           onClose={() => setDialogOpen(false)}
           recipe={selectedRecipe}
           targetLang={i18n.language}
+          
         />
       )},
 

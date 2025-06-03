@@ -3,7 +3,8 @@ import dayjs from "dayjs";
 import { useTranslation } from "react-i18next";
 import { translateDirectly } from "./translateAI";
 import { useDispatch } from "react-redux";
-import { addCategoryThunk, reorderCategoriesThunk, delCategoryThunk } from "../store/dataSlice.ts";
+import { addCategoryThunk, reorderCategoriesThunk, delCategoryThunk } from "../store/dataSlice";
+import { TCategory, TPages } from "../types/recipe";
 
 import {
   DndContext,
@@ -11,6 +12,7 @@ import {
   PointerSensor,
   useSensor,
   useSensors,
+  DragEndEvent,
 } from "@dnd-kit/core";
 import {
   SortableContext,
@@ -23,14 +25,16 @@ import i18n from "../i18n";
 
   const isRTL = i18n.dir() === "rtl";
 // A sortable item component using dnd‑kit
-function SortableItem({
-  item,
-  index,
-  onSelect,
-  editCategories,
-  translatedCategory,
-  delCategoryCallback,
-}) {
+type TSortableProps = {
+  item: TCategory;
+  index: number;
+  onSelect: (item: any) => void;  
+  editCategories?: boolean; 
+  translatedCategory?: string;
+  delCategoryCallback: (id: string) => void;
+};
+function SortableItem(props:TSortableProps) {
+  const { item, index, onSelect, editCategories, translatedCategory, delCategoryCallback } = props;
   const { attributes, listeners, setNodeRef, transform, transition } = useSortable({
     id: item._id,
   });
@@ -40,12 +44,12 @@ function SortableItem({
   };
 
   // Compute recipe count for this category
-  const recipeCount = item.itemPage?.length || 0;
+  const recipeCount = item.itemPages?.length || 0;
 
   // Get the image URL from the first recipe in the category, if available
   const firstRecipeImage =
-    item.itemPage && item.itemPage.length > 0
-      ? item.itemPage[0].imageUrl
+    item.itemPages && item.itemPages.length > 0
+      ? item.itemPages[0].imageUrl
       : "https://placehold.co/40x40?text=No+Image";
 
   return (
@@ -105,27 +109,29 @@ function SortableItem({
     </li>
   );
 }
+type TProps = {
+  pages: TPages;
+  onSelect: (item: any) => void;
+  editCategories?: boolean;
+  onOrderChange?: (newOrder: any[]) => void;
+  setReorder?: (value: boolean) => void;
+};
 
-export default function NavItemList({
-  pages = [],
-  onSelect,
-  editCategories,
-  onOrderChange,
-  setReorder,
-}) {
+export default function NavItemList(props:TProps) {
+  const { pages, onSelect, editCategories, onOrderChange, setReorder } = props;
   const { t, i18n } = useTranslation();
   const dispatch = useDispatch();
 
   // Initialize items with a unique _id and default priority 
-  const initializeItems = () =>
+  const initializeItems = ():TPages =>
     pages.map((item, index) => ({
       ...item,
-      _id: item._id || Date.now() + Math.random(),
+      _id: item._id || (Date.now() + Math.random()).toString(),
       priority: item.priority !== undefined ? item.priority : index + 1,
     }));
 
-  const [items, setItems] = useState(initializeItems());
-  const [translatedCategories, setTranslatedCategories] = useState([]);
+  const [items, setItems] = useState<TPages>(initializeItems());
+  const [translatedCategories, setTranslatedCategories] = useState<string[]>([]);
   const [inputValue, setInputValue] = useState("");
   const [newCat, setNewCat] = useState(false);
 
@@ -149,11 +155,11 @@ export default function NavItemList({
   const handleAddItem = () => {
     setNewCat(false);
     if (inputValue.trim() === "") return;
-    const newItem = {
-      _id: Date.now() + Math.random(),
+    const newItem:TCategory = {
+      _id: (Date.now() + Math.random()).toString(),
       category: inputValue.trim(),
       createdAt: dayjs().format("DD-MM-YYYY"),
-      itemPage: [],
+      itemPages: [],
       priority: items.length + 1,
     };
     // Dispatch redux thunk to add category instead of calling storage directly
@@ -163,7 +169,7 @@ export default function NavItemList({
   };
 
   // Callback when drag ends: update order, set new priorities, persist via redux
-  const handleDragEnd = (event) => {
+  const handleDragEnd = (event: DragEndEvent) => {
     const { active, over } = event;
     console.log("Drag ended", active, over);
     if (!over) return; // No item was dropped
@@ -178,12 +184,12 @@ export default function NavItemList({
       dispatch(reorderCategoriesThunk(newItems));
       // Notify parent if needed
       onOrderChange && onOrderChange(newItems);
-      setReorder(true);
+     setReorder&& setReorder(true);
     }
   };
 
   // Callback to delete an item from state using redux thunk
-  const handleDelCategory = (id) => {
+  const handleDelCategory = (id: string) => {
     const categoryToDelete = items.find((i) => i._id === id)?.category || "";
     dispatch(delCategoryThunk({ categoryId: id, categoryName: categoryToDelete }));
     setItems((prevItems) => prevItems.filter((i) => i._id !== id));

@@ -14,30 +14,19 @@ import "./styles.css";
 import { Provider } from "react-redux";
 import * as storage from "./utils/storage"; // adjust path if needed
 import store from "./store/store"
+import { TRecipe, TRecipes } from "./types/recipe"; // Adjust the import path as needed
 
 const rootElement = document.getElementById("root") as Container;
 const root = ReactDOM.createRoot(rootElement);
-type Recipes = {
-  site: {
-    pages: Recipe[];
-  }
-};
 
-type Recipe = {
-  title: string;
-  category: string;
-  ingredients: string[];
-  instructions: string;
-  image?: string;
-}
 
 function App() {
-  const [recipes, setRecipes] = useState<null | Recipes>(null); // Initialize recipes as null
-  const [selected, setSelected] = useState<null | Recipe>(null); // Initialize selected as null
+  const [recipes, setRecipes] = useState<null | TRecipes>(null); // Initialize recipes as null
+  const [selected, setSelected] = useState<null | TRecipe>(null); // Initialize selected as null
 
   useEffect(() => {
     const fetchData = async () => {
-      const data = await storage.loadData() as Recipes; // Load data from storage
+      const data = await storage.loadData() as TRecipes; // Load data from storage
       setRecipes(data);
       if (!selected) {
         setSelected(data?.site?.pages[0]);

@@ -3,12 +3,21 @@ import NavItemList from "./NavItemList";
 import { useTranslation } from "react-i18next";
 import { Button } from "@mui/material";
 import { useNavigate } from "react-router-dom"; // ✅ Step 1
+import { TPages, TCategory } from "../types/recipe"; // Adjust the import path as needed
+type Tprops = {
+  isOpen: boolean;      
+  onSelect: (item: any) => void;
+  pages: TPages; // Adjust the type as needed
+  desktop?: boolean;
+  reorder?: boolean;
+}
 
-export default function NavMenu({ pages, onSelect, isOpen,  language, desktop }) {
+export default function NavMenu(props:Tprops) {
+  const { isOpen, onSelect, pages, desktop } = props;
   const { t, i18n } = useTranslation();
   const [editCategories, setEditCategories] = useState(false);
   const [reorder, setReorder] = useState(false);
-  const [orderedPages, setOrderedPages] = useState(pages);
+  const [orderedPages, setOrderedPages] = useState<null|TPages>(pages);
 
   const navigate = useNavigate(); // ✅ Step 2
 
@@ -16,11 +25,11 @@ export default function NavMenu({ pages, onSelect, isOpen,  language, desktop })
     setOrderedPages(pages);
   }, [pages]);
 
-  const handleOrderChange = (newOrder) => {
+  const handleOrderChange = (newOrder:TPages) => {
     setOrderedPages(newOrder);
   };
 
-  const handleSelectCategory = (item) => {
+  const handleSelectCategory = (item:TCategory) => {
     onSelect(item);
     setEditCategories(false);
     setReorder(false);

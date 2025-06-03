@@ -12,6 +12,7 @@ import {
 } from "@mui/material";
 import { useTranslation } from "react-i18next";
 import { translateDirectly } from "./translateAI";
+import {TRecipe, TRecipes} from "../types/recipe"; // Adjust the import path as needed
 
 const BASE_URL = "https://be-tan-theta.vercel.app";
 
@@ -20,13 +21,7 @@ type Tprops = {
   onClose: () => void;
   onSave: (recipe: any) => void;
   onDelete?: (recipe: any) => void;
-  recipe?: {
-    title?: string;
-    ingredients?: string;
-    preparation?: string;
-    imageUrl?: string;
-    _id?: string;
-  };
+  recipe?: TRecipe | null;
   targetLang?: string;
   type?: "edit" | "new";
   categoryName?: string;
@@ -47,13 +42,7 @@ const RecipeDialog = ({
   const { i18n, t } = useTranslation();
   const isRTL = i18n.language === "he" || i18n.language === "ar";
 
-  const [editableRecipe, setEditableRecipe] = useState({
-    title: recipe?.title || "",
-    ingredients: recipe?.ingredients || "",
-    preparation: recipe?.preparation || "",
-    imageUrl: recipe?.imageUrl || "",
-    _id: recipe?._id || "",
-  });
+  const [editableRecipe , setEditableRecipe] = useState<null|TRecipe>(null);
 
   const [isLoadingImage, setIsLoadingImage] = useState(false);
   const [isFillingAI, setIsFillingAI] = useState(false);
@@ -61,10 +50,11 @@ const RecipeDialog = ({
   useEffect(() => {
     if (recipe) {
       setEditableRecipe({
+        category: recipe.category,
         title: recipe.title || "",
-        ingredients: recipe.ingredients || "",
+        ingredients: recipe.ingredients || [""],
         preparation: recipe.preparation || "",
-        imageUrl: recipe.imageUrl || "",
+        imageUrl: recipe.imageUrl || ""
       });
     }
   }, [recipe]);
@@ -89,6 +79,8 @@ const RecipeDialog = ({
           title,
           ingredients,
           preparation,
+          category: recipe.category, // Keep the original category
+          imageUrl: recipe.imageUrl, // Keep the original image URL
         }));
       } catch (error) {
         console.error("Error during translation:", error);
@@ -97,12 +89,28 @@ const RecipeDialog = ({
     doTranslate();
   }, [recipe, targetLang, open]);
 
-  const handleChange = (field) => (event) => {
-    setEditableRecipe((prev) => ({
+  const handleChange = (field:keyof TRecipe) => (event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement> ) => {
+    // if(field==="")
+    if(field === "ingredients" ){
+      const value = event.target.value;
+      const ingredientsArray = value.split("\n").map((item) => item.trim()).filter((item) => item);
+      setEditableRecipe((prev) => (prev === null ? null : {
+        ...prev,
+        [field]: ingredientsArray,
+      }));
+      return;
+    } {
+   setEditableRecipe((prev)=>{
+    if(!prev) return null;
+    return {
       ...prev,
+   
       [field]: event.target.value,
-    }));
+    }
+   })
   };
+}
+
 
   const handleSave = () => {
     onSave(editableRecipe);
@@ -121,20 +129,20 @@ const RecipeDialog = ({
         },
         body: JSON.stringify({
           categoryName: categoryName,
-          title: editableRecipe.title,
+          title: editableRecipe?.title,
           recipeId: recipe?._id,
         }),
       });
       if (!response.ok) throw new Error("Failed to fill recipe via AI");
 
       const data = await response.json();
-      setEditableRecipe((prev) => ({
+      setEditableRecipe((prev) => (!prev ? null : {
         ...prev,
-        ingredients: data.ingredients,
-        title: data.title || prev.title,
-        preparation: data.preparation,
+        ingredients: data?.ingredients,
+        title: data?.title || prev.title,
+        preparation: data?.preparation,
       }));
-      await handleRecreateImage(data.title || editableRecipe.title);
+      await handleRecreateImage(data.title || editableRecipe?.title);
     } catch (error) {
       console.error("Error while filling recipe via AI:", error);
     } finally {
@@ -160,7 +168,7 @@ const RecipeDialog = ({
       if (!response.ok) throw new Error("Failed to recreate image via AI");
 
       const data = await response.json();
-      setEditableRecipe((prev) => ({
+      setEditableRecipe((prev) => (!prev ? null : {  
         ...prev,
         imageUrl: data.imageUrl,
       }));
@@ -173,8 +181,7 @@ const RecipeDialog = ({
 
   const handleDelete = () => {
     if (onDelete) {
-      editableRecipe._id = recipe?._id;
-      onDelete(editableRecipe);
+      onDelete({...editableRecipe, _id:recipe?._id});
       onClose();
     }
   };
@@ -196,7 +203,7 @@ const RecipeDialog = ({
           fontSize: "20px",
         }}
       >
-        {editableRecipe.title}
+        {editableRecipe?.title}
         <IconButton
           onClick={onClose}
           style={{ position: "absolute", right: 8, top: 8 }}
@@ -237,10 +244,10 @@ const RecipeDialog = ({
           >
             <img
               src={
-                editableRecipe.imageUrl ||
+                editableRecipe?.imageUrl ||
                 "https://placehold.co/100x100?text=No+Image"
               }
-              alt={editableRecipe.title}
+              alt={editableRecipe?.title}
               style={{ maxHeight: "300px", borderRadius: "28px" }}
             />
             {isLoadingImage && (
@@ -252,7 +259,7 @@ const RecipeDialog = ({
               />
             )}
             <IconButton
-              onClick={() => handleRecreateImage(editableRecipe.title)}
+              onClick={() => handleRecreateImage(editableRecipe?.title)}
               title={t("recreate image")}
               style={{ position: "absolute", right: 10, top: 10 }}
             >
@@ -262,14 +269,15 @@ const RecipeDialog = ({
 
           <TextField
             label={t("recipeName")}
-            value={editableRecipe.title}
+            value={editableRecipe?.title}
             onChange={handleChange("title")}
+          
             fullWidth
             margin="normal"
           />
           <TextField
             label={t("ingredients")}
-            value={editableRecipe.ingredients}
+            value={editableRecipe?.ingredients}
             onChange={handleChange("ingredients")}
             fullWidth
             multiline
@@ -278,7 +286,7 @@ const RecipeDialog = ({
           />
           <TextField
             label={t("preparation")}
-            value={editableRecipe.preparation}
+            value={editableRecipe?.preparation}
             onChange={handleChange("preparation")}
             fullWidth
             multiline

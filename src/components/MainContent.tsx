@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, CSSProperties } from "react";
 import CaseCard from "./CaseCard";
 import Pagination from "@mui/material/Pagination";
 import Button from "@mui/material/Button";
@@ -7,7 +7,7 @@ import { useTranslation } from "react-i18next";
 import { translateDirectly } from "./translateAI";
 import { generateImage } from "./imageAI";
 import { useDispatch } from "react-redux";
-import { addRecipeThunk, delRecipeThunk, updateRecipeThunk } from "../store/dataSlice.ts";
+import { addRecipeThunk, delRecipeThunk, updateRecipeThunk } from "../store/dataSlice";
 import {
   DndContext,
   closestCenter,
@@ -15,47 +15,21 @@ import {
   useSensor,
   useSensors,
 } from "@dnd-kit/core";
-import {
-  SortableContext,
-  verticalListSortingStrategy,
-  arrayMove,
-  useSortable,
-} from "@dnd-kit/sortable";
-import { CSS } from "@dnd-kit/utilities";
+
 import { useNavigate } from "react-router-dom";
+import { TRecipe, TRecipes, TPages, TCategory } from "../types/recipe";
 
 
+type TMainProps = { 
 
+  selected: TRecipe | null;
+  selectedRecipe?: TRecipe | null;
+  addRecipe?: boolean;
+  isDarkMode?: boolean;
+};
 
-function SortableRecipe({ recipe, index, onSelect }) {
-  const { attributes, listeners, setNodeRef, transform, transition } = useSortable({
-    id: recipe._id,
-  });
-  const style = {
-    transform: CSS.Transform.toString(transform),
-    transition,
-    marginBottom: "10px",
-    cursor: "grab",
-    display: "flex",
-    justifyContent: "center",
-    flexWrap: "wrap",
-    gap: "1rem",
-  };
-
-  return (
-    <div
-      ref={setNodeRef}
-      style={style}
-      {...attributes}
-      {...listeners}
-      onClick={() => onSelect(recipe)}
-    >
-      <CaseCard item={recipe} category={recipe.category} index={index + 1} />
-    </div>
-  );
-}
-
-export default function MainContent({ data, selected, selectedRecipe, addRecipe, desktop,isDarkMode }) {
+export default function MainContent(mainProps: TMainProps) {
+  const { selected, selectedRecipe, addRecipe, isDarkMode } = mainProps;
   const { t, i18n } = useTranslation();
   const dispatch = useDispatch();
 
@@ -74,17 +48,14 @@ export default function MainContent({ data, selected, selectedRecipe, addRecipe,
   const [editOrder, setEditOrder] = useState(false);
 
   // Assume recipes are stored in selected.itemPage
-  const [recipes, setRecipes] = useState(selected?.itemPage || []);
+  const [recipes, setRecipes] = useState<TPages|null>(null);
   const navigate = useNavigate();
 
   useEffect(() => {
-    setOpenView(selectedRecipe)
+    setOpenView(selectedRecipe? true : false);
   }, [selectedRecipe]);
 
 
-  useEffect(() => {
-    setRecipes(selected?.itemPage || []);
-  }, [selected]);
 
   // Translate category name
   useEffect(() => {
@@ -104,25 +75,11 @@ export default function MainContent({ data, selected, selectedRecipe, addRecipe,
     useSensor(PointerSensor, { activationConstraint: { distance: 5 } })
   );
 
-  const handleRecipeDragEnd = (event) => {
-    const { active, over } = event;
-    if (!over) return;
-    if (active.id !== over.id) {
-      const oldIndex = recipes.findIndex((r) => r._id === active.id);
-      const newIndex = recipes.findIndex((r) => r._id === over.id);
-      const newRecipes = arrayMove(recipes, oldIndex, newIndex);
-      setRecipes(newRecipes);
-      // Optionally: dispatch a thunk to persist this new order
-      // dispatch(reorderRecipesThunk(newRecipes));
-    }
-  };
 
-  const handleAddRecipe = async (recipe) => {
+  const handleAddRecipe = async (recipe:TRecipe) => {
 console.log("Adding recipe:", recipe);
-    const newRecipeData = {
-      title: recipe?.title,
-      ingredients: recipe?.ingredients,
-      preparation: recipe?.preparation,
+    const newRecipeData : TCategory = {
+
       categoryId: selected?._id,
       imageUrl: recipe?.imageUrl || "",
       category: selected?.category,
@@ -162,9 +119,9 @@ console.log("Adding recipe:", recipe);
   };
 
   // Function to delete a recipe using Redux and update local state
-  const handleDeleteRecipe = (recipe) => {
-    if (window.confirm(t("Are you sure you want to delete this recipe? ID:" + recipe._id + " " + recipe.title))) {
-      dispatch(delRecipeThunk(recipe._id))
+  const handleDeleteRecipe = (recipe: TRecipe, id:String) => {
+    if (window.confirm(t("Are you sure you want to delete this recipe? ID:" + id + " " + recipe.title))) {
+      dispatch(delRecipeThunk(id))
         .unwrap()
         .then(() => {
           setRecipes((prevRecipes) =>
@@ -271,15 +228,7 @@ const handleSelectRecipe = (recipe) => {
           />
         </div>
       )}
-      {editOrder ? (
-        <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleRecipeDragEnd}>
-          <SortableContext items={recipes.map((r) => r._id)} strategy={verticalListSortingStrategy}>
-            {recipes.map((recipe, index) => (
-              <SortableRecipe key={recipe._id} recipe={recipe} index={index} onSelect={handleSelectRecipe} />
-            ))}
-          </SortableContext>
-        </DndContext>
-      ) : (
+(
         <div className="row d-flex justify-content-center">
           {currentItems.map((item, index) => {
             let colClass = "col-12 col-sm-8 col-md-6 col-lg-3";
@@ -310,7 +259,8 @@ const handleSelectRecipe = (recipe) => {
           console.log("Saving recipe:", recipe, viewedItem?._id);
           viewedItem?._id ? handleUpdateRecipe(recipe) : handleAddRecipe(recipe);
         }}
-        onDelete={(recipe) => {
+        onDelete={(recipe: TRecipe, id:string) => {
+          console.log("Deleting recipe:", recipe, id);
           handleDeleteRecipe(recipe);
         }}
         targetLang={i18n.language}

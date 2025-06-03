@@ -7,10 +7,19 @@ import { useTranslation } from "react-i18next";
 import { ThemeProvider } from "styled-components";
 import { lightTheme, darkTheme } from "../components/themes";
 import GlobalStyle from "../components/GlobalStyle";
+import { TRecipe, TRecipes } from "../types/recipe"; // Adjust the import path as needed
 import * as store from "../utils/storage"; // adjust path if needed
+type Tprops = {
+  selectedRecipe?: TRecipe,
+  newRecipe?:boolean,            
+  recipes: TRecipes | null; // Recipes can be null initially,
+  setRecipes: React.Dispatch<React.SetStateAction<TRecipes | null>>
+  selected: TRecipe | null; // Selected can also be null initially,
+  setSelected:  React.Dispatch<React.SetStateAction<TRecipe | null>>,
+};
 
-export default function Main(props) {
-  const { selectedRecipe, newRecipe, recipes, setRecipes, selected, setSelected } = props;
+export default function Main(props:Tprops) {
+  const { recipes, setRecipes, selected, setSelected, selectedRecipe, newRecipe } = props;
   const [menuOpen, setMenuOpen] = useState(false);
   const { i18n } = useTranslation();
   const [isDarkMode, setIsDarkMode] = useState(false);
@@ -39,6 +48,8 @@ export default function Main(props) {
     window.addEventListener("resize", handleResize); // Add event listener for window resize
   }, [window.innerWidth]);
 
+  console.log({recipesFromHome: recipes});
+
   if (!recipes) return null; // Wait until recipes are loaded
   if (!recipes?.site?.pages) return null;
 
@@ -55,7 +66,6 @@ export default function Main(props) {
             onHamburgerClick={handleHamburgerClick} // Pass the function here
             pages={recipes?.site?.pages}
             isDarkMode={isDarkMode}
-            data={recipes}
           />
         </div>
         <div className="container-fluid ps-0 pe-0">
@@ -67,7 +77,7 @@ export default function Main(props) {
               <NavMenu
                 pages={recipes?.site?.pages}
                 isOpen={menuOpen || desktop}
-                onSelect={(item) => {
+                onSelect={(item:TRecipe) => {
                   console.log("Selected item:", item);
                   setSelected(item);
                   if (!desktop) setMenuOpen(false);
