@@ -4,11 +4,23 @@ import { translateDirectly } from "./translateAI";
 import dayjs from "dayjs";
 import * as storage from "../utils/storage";
 
-export default function CaseCard({ item, category, index, isDarkMode }) {
+interface CaseCardProps {
+  item: {
+    title: string;
+    description?: string;
+    imageUrl?: string;
+    createdAt?: string;
+  };
+  category: string;
+  index?: number;
+  isDarkMode?: boolean;
+}
+
+export default function CaseCard({ item, category, index, isDarkMode }: CaseCardProps) {
   const { t, i18n } = useTranslation();
   const currentLang = i18n.language;
 
-  const [translated, setTranslated] = useState({
+  const [translated, setTranslated] = useState<{ title: string; description?: string }>({
     title: "",
     description: "",
   });
@@ -61,8 +73,8 @@ export default function CaseCard({ item, category, index, isDarkMode }) {
       <img
         src={item.imageUrl || imageUrl}
         alt={translated.title || item.title}
-        onError={(e) => {
-          e.target.src = `https://placehold.co/100x100?text=${item.title}`;
+        onError={(e: React.SyntheticEvent<HTMLImageElement, Event>) => {
+          (e.target as HTMLImageElement).src = `https://placehold.co/100x100?text=${item.title}`;
         }}
       />
       <h2>{isLoading ? t("loading") : translated.title}</h2>
