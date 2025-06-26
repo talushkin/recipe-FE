@@ -3,12 +3,13 @@ import i18n from "./i18n.js";
 import "bootstrap/dist/css/bootstrap.min.css"; // Import Bootstrap CSS
 import ReactDOM from "react-dom/client";
 import { I18nextProvider } from "react-i18next";
-import { BrowserRouter as Router, Routes, Route, useNavigate } from "react-router-dom"; // <-- add useNavigate
+import { BrowserRouter as Router, Routes, Route, useNavigate, useParams } from "react-router-dom"; // <-- add useParams
 import RecipeCategory from "./Pages/RecipeCategory.jsx";
 import RecipeDetail from "./Pages/RecipeDetail";
 import AddRecipe from "./Pages/AddRecipe";
 import HomePage from "./Pages/HomePage";
 import "./styles.css";
+import { CircularProgress, Box } from "@mui/material"; // Add this import
 
 // Import Redux Provider and store
 import { Provider } from "react-redux";
@@ -23,23 +24,44 @@ function App() {
   const [selected, setSelected] = useState(null);
   const [selectedRecipe, setSelectedRecipe] = useState(null);
   const [selectedCategory, setSelectedCategory] = useState(null);
+  const [loading, setLoading] = useState(true); // Add loading state
 
-  const navigate = useNavigate(); // <-- add this line
+  const navigate = useNavigate();
+  const params = useParams(); // <-- get params
 
   useEffect(() => {
     const fetchData = async () => {
-      const data = await storage.loadData();
+      setLoading(true); // Start loading
+      const data = await storage.loadData(false);
       setRecipes(data);
-      if (!selectedCategory && data?.site?.pages && data.site.pages.length > 0) {
-        console.log("Setting initial selectedCategory to:", data?.site?.pages[0]);
-        setSelectedCategory(data?.site?.pages[0]);
-              navigate(
-        `/recipes/${encodeURIComponent(data?.site?.pages[0].category)}`
-      );
+
+      // Check if category or recipe name exists in URL
+      const categoryParam = params.category;
+      const titleParam = params.title;
+
+      if (data?.site?.pages && data.site.pages.length > 0) {
+        let initialCategory = data.site.pages[0];
+        if (categoryParam) {
+          const foundCat = data.site.pages.find(
+            (cat) => encodeURIComponent(cat.category) === categoryParam
+          );
+          if (foundCat) initialCategory = foundCat;
+        }
+        setSelectedCategory(initialCategory);
+
+        // If recipe title exists in URL, find and set it
+        if (titleParam && initialCategory.itemPage) {
+          const foundRecipe = initialCategory.itemPage.find(
+            (rec) => encodeURIComponent(rec.title) === titleParam
+          );
+          if (foundRecipe) setSelectedRecipe(foundRecipe);
+        }
       }
+
+      setLoading(false); // Stop loading
     };
     fetchData();
-  }, []);
+  }, [params.category, params.title]);
 
   useEffect(() => {
     //console.log("recipes", recipes);
@@ -61,7 +83,25 @@ function App() {
 
   return (
     <>
-      {recipes && (
+      {loading && (
+        <Box
+          sx={{
+            width: "100vw",
+            height: "100vh",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            position: "fixed",
+            left: 0,
+            top: 0,
+            zIndex: 2000,
+            background: "#fffce8",
+          }}
+        >
+          <CircularProgress size={64} />
+        </Box>
+      )}
+      {!loading && recipes && (
         <Routes>
           <Route path="/"
             element={<HomePage

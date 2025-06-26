@@ -258,7 +258,7 @@ const RecipeDialog = ({
 
   return (
     <Dialog
-      open={open}
+      open={open||false}
       onClose={onClose}
       dir={isRTL ? "rtl" : "ltr"}
       PaperProps={{

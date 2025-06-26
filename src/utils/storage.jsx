@@ -12,8 +12,18 @@ const AUTH_HEADER = {
 };
 
 // Load categories and recipes from the server
-export const loadData = async () => {
+export const loadData = async (loadFromMemory = false) => {
   try {
+    if (loadFromMemory) {
+      const cached = localStorage.getItem("recipeSiteData");
+      if (cached) {
+        const site = JSON.parse(cached);
+        console.log("Loaded site from localStorage cache:", site);
+        return site;
+      }
+      // If not in cache, fall through to fetch from API
+    }
+
     // Fetch categories and recipes using direct axios calls
     const categoriesRes = await axios.get(`${BASE_URL}/api/categories`, {
       headers: AUTH_HEADER,
@@ -22,18 +32,17 @@ export const loadData = async () => {
       headers: AUTH_HEADER,
     });
 
-    console.log("categoriesRes", categoriesRes.data);
-    console.log("recipesRes", recipesRes.data);
-
     // Construct the site object
     const site = {
       success: true,
       message: "Data loaded successfully",
       site: {
         header: {
-          logo: "https://vt-photos.s3.amazonaws.com/recipe-app-icon-generated-image.png"},
+          logo: "https://vt-photos.s3.amazonaws.com/recipe-app-icon-generated-image.png"
+        },
         pages: categoriesRes.data.map((cat) => ({
           category: cat.category || "unknown category",
+          translatedCategory: cat.translatedCategory || [],
           _id: cat._id,
           itemPage: recipesRes.data
             .filter((r) => r.categoryId?._id === cat._id)
@@ -48,6 +57,8 @@ export const loadData = async () => {
         })),
       },
     };
+    // Save to localStorage as cache
+    localStorage.setItem("recipeSiteData", JSON.stringify(site));
     console.log("Data loaded successfully:", site);
     return site;
   } catch (err) {
@@ -172,5 +183,29 @@ export const handleItemsChangeOrder = async (orderedCategories) => {
     console.log("Categories reordered successfully");
   } catch (err) {
     console.error("Error updating category order:", err.response?.data || err.message);
+  }
+};
+
+// Update a category
+export const updateCategory = async (updatedCategory) => {
+  if (!updatedCategory._id) {
+    console.error("Missing category ID for update.");
+    return null;
+  }
+  try {
+    const res = await axios.put(
+      `${BASE_URL}/api/categories/${updatedCategory._id}`,
+      {
+        category: updatedCategory.category,
+        // Add other fields to update as needed, e.g.:
+        // priority: updatedCategory.priority,
+      },
+      { headers: AUTH_HEADER }
+    );
+    console.log("Category updated:", res.data);
+    return res.data;
+  } catch (err) {
+    console.error("Error updating category:", err.response?.data || err.message);
+    return null;
   }
 };

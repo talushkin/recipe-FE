@@ -93,6 +93,19 @@ export const updateRecipeThunk = createAsyncThunk(
   }
 );
 
+// Async thunk for updating a category
+export const updateCategoryThunk = createAsyncThunk(
+  'data/updateCategory',
+  async (updatedCategory, { rejectWithValue }) => {
+    try {
+      const res = await storage.updateCategory(updatedCategory);
+      return res;
+    } catch (err) {
+      return rejectWithValue(err.response?.data || err.message);
+    }
+  }
+);
+
 const initialState = {
   site: null,
   loading: false,
@@ -158,6 +171,14 @@ const dataSlice = createSlice({
               recipe._id === updatedRecipe._id ? updatedRecipe : recipe
             )
           }));
+        }
+      })
+      .addCase(updateCategoryThunk.fulfilled, (state, action) => {
+        const updatedCategory = action.payload;
+        if (state.site && state.site.pages) {
+          state.site.pages = state.site.pages.map((cat) =>
+            cat._id === updatedCategory._id ? { ...cat, ...updatedCategory } : cat
+          );
         }
       });
   },

@@ -5,7 +5,7 @@ import HomePage from "./HomePage";
 export default function RecipeDetail(props) {
   const { selectedRecipe, newRecipe, recipes, setRecipes, setSelectedCategory, selectedCategory } = props;
   const { category, title } = useParams();
-
+  console.log('RecipeDetail params:', useParams());
   const pages = recipes?.site?.pages || [];
 
   // Normalize category (lowercase) for comparison
@@ -23,7 +23,7 @@ export default function RecipeDetail(props) {
       console.warn("Recipe not found:", title);
       // return <div>Recipe not found.</div>;
     }
-   // console.log("Found recipe:", selectedRecipeData);
+    console.log("Found recipe:", selectedRecipeData);
     return (
       <HomePage
         selectedCategory={selectedCategoryData}

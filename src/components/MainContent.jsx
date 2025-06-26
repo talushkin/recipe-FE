@@ -56,12 +56,12 @@ function SortableRecipe({ recipe, index, onSelect }) {
   );
 }
 
-export default function MainContent({ data, selected, selectedRecipe, addRecipe, desktop,isDarkMode }) {
+export default function MainContent({ data, selectedCategory, selectedRecipe, addRecipe, desktop, isDarkMode }) {
   const { t, i18n } = useTranslation();
   const dispatch = useDispatch();
 
   const [page, setPage] = useState(1);
-  const [translatedCategory, setTranslatedCategory] = useState(selected?.category);
+  const [translatedCategory, setTranslatedCategory] = useState(selectedCategory?.category);
   const itemsPerPage = 8;
   const [openView, setOpenView] = useState(selectedRecipe || false);
   const [openAdd, setOpenAdd] = useState(addRecipe || false);
@@ -81,8 +81,8 @@ export default function MainContent({ data, selected, selectedRecipe, addRecipe,
       : "flex-start"
   );
 
-  // Assume recipes are stored in selected.itemPage
-  const [recipes, setRecipes] = useState(selected?.itemPage || []);
+  // Assume recipes are stored in selectedCategory.itemPage
+  const [recipes, setRecipes] = useState(selectedCategory?.itemPage || []);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -91,22 +91,44 @@ export default function MainContent({ data, selected, selectedRecipe, addRecipe,
 
 
   useEffect(() => {
-    console.log("Selected category changed:", selected);
-    setRecipes(selected?.itemPage || []);
-  }, [selected]);
+    console.log("Selected category changed:", selectedCategory);
+    setRecipes(selectedCategory?.itemPage || []);
+  }, [selectedCategory]);
 
   // Translate category name
   useEffect(() => {
     const translateCategory = async () => {
-      if (selected?.category && i18n.language !== "en") {
-        const translated = await translateDirectly(selected.category, i18n.language);
+      const lang = i18n.language;
+      if (selectedCategory?.category && lang !== "en") {
+        // Check if translation already exists in translatedCategory array
+        if (
+          Array.isArray(selectedCategory.translatedCategory)
+        ) {
+          const found = selectedCategory.translatedCategory.find(
+            (t) => t.lang === lang && t.value
+          );
+          if (found) {
+            setTranslatedCategory(found.value);
+            return;
+          }
+        }
+        // Fallback: check object format (for backward compatibility)
+        if (
+          selectedCategory.translatedCategory &&
+          selectedCategory.translatedCategory[lang]
+        ) {
+          setTranslatedCategory(selectedCategory.translatedCategory[lang]);
+          return;
+        }
+        // If not, translate and show
+        const translated = await translateDirectly(selectedCategory.category, lang);
         setTranslatedCategory(translated);
       } else {
-        setTranslatedCategory(selected?.category);
+        setTranslatedCategory(selectedCategory?.category);
       }
     };
     translateCategory();
-  }, [selected?.category, i18n.language]);
+  }, [selectedCategory?.category, selectedCategory?.translatedCategory, i18n.language]);
 
   // Sensors for DnD
   const sensors = useSensors(
@@ -132,9 +154,9 @@ export default function MainContent({ data, selected, selectedRecipe, addRecipe,
       title: recipe?.title,
       ingredients: recipe?.ingredients,
       preparation: recipe?.preparation,
-      categoryId: selected?._id,
+      categoryId: selectedCategory?._id,
       imageUrl: recipe?.imageUrl || "",
-      category: selected?.category,
+      category: selectedCategory?.category,
     };
 
     // Translate fields to English if current language is not English
@@ -159,7 +181,7 @@ export default function MainContent({ data, selected, selectedRecipe, addRecipe,
     console.log("Adding recipe:", newRecipeData);
     try {
       const response = await dispatch(
-        addRecipeThunk({ recipe: newRecipeData, category: selected })
+        addRecipeThunk({ recipe: newRecipeData, category: selectedCategory })
       ).unwrap();
       console.log("Recipe added:", response);
       setRecipes([...recipes, newRecipeData]);
@@ -175,8 +197,8 @@ export default function MainContent({ data, selected, selectedRecipe, addRecipe,
   // New function: Update existing recipe
   const handleUpdateRecipe = async (updatedRecipe) => {
     updatedRecipe._id = viewedItem._id; // Ensure we have the correct ID
-    updatedRecipe.categoryId = selected?._id; // Ensure we have the correct category ID
-    updatedRecipe.category = selected?.category; // Ensure we have the correct category name
+    updatedRecipe.categoryId = selectedCategory?._id; // Ensure we have the correct category ID
+    updatedRecipe.category = selectedCategory?.category; // Ensure we have the correct category name
     console.log("Updating recipe:", updatedRecipe);
     try {
       const response = await dispatch(updateRecipeThunk(updatedRecipe)).unwrap();
@@ -220,8 +242,8 @@ const handleSelectRecipe = (recipe) => {
   console.log("Selected recipe:", recipe);
   setViewedItem(recipe);
   setOpenView(true);
-  if (recipe && selected?.category && recipe?.title) {
-    const categoryEncoded = encodeURIComponent(selected?.category);
+  if (recipe && selectedCategory?.category && recipe?.title) {
+    const categoryEncoded = encodeURIComponent(selectedCategory?.category);
     const titleEncoded = encodeURIComponent(recipe?.title);
     navigate(`/recipes/${categoryEncoded}/${titleEncoded}`);
     console.log("Navigating to:", `/recipes/${categoryEncoded}/${titleEncoded}`);
@@ -248,8 +270,8 @@ const handleSelectRecipe = (recipe) => {
   const handleCloseDialog = () => {
     setOpenView(false);
     setOpenAdd(false);
-    if (selected?.category) {
-      const categoryEncoded = encodeURIComponent(selected.category);
+    if (selectedCategory?.category) {
+      const categoryEncoded = encodeURIComponent(selectedCategory.category);
       navigate(`/recipes/${categoryEncoded}`);
     }
   };
@@ -411,7 +433,7 @@ const handleSelectRecipe = (recipe) => {
                 <CaseCard
                   index={startIndex + index + 1}
                   item={item}
-                  category={selected?.category}
+                  category={selectedCategory?.category}
                   isDarkMode={isDarkMode}
                 />
               </div>
@@ -442,7 +464,7 @@ const handleSelectRecipe = (recipe) => {
         onClose={handleCloseDialog}
         type="add"
         recipe={newRecipe}
-        categoryName={selected?.category}
+        categoryName={selectedCategory?.category}
         onSave={(recipe) => {
           console.log("Saving recipe:", recipe, viewedItem?._id);
           handleAddRecipe(recipe);

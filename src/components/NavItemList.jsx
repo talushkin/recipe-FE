@@ -125,8 +125,12 @@ export default function NavItemList({
       priority: item.priority !== undefined ? item.priority : index + 1,
     }));
 
+  const getTranslatedCategory = (item, lang) => {
+    if (!item.translatedCategory) return null;
+    return item.translatedCategory[lang] || null;
+  };
+
   const [items, setItems] = useState(initializeItems());
-  const [translatedCategories, setTranslatedCategories] = useState([]);
   const [inputValue, setInputValue] = useState("");
   const [newCat, setNewCat] = useState(false);
 
@@ -135,18 +139,52 @@ export default function NavItemList({
     setItems(initializeItems());
   }, [pages]);
 
-  // Translate category names
+  // Translate category names and cache them per language
   useEffect(() => {
     const translateCategories = async () => {
       if (pages.length === 0) return;
-      console.log("Translating categories for language:", i18n.language);
-      const translations = await Promise.all(
-        pages.map((item) => translateDirectly(item.category, i18n.language))
+      const lang = i18n.language;
+      const newItems = await Promise.all(
+        pages.map(async (item) => {
+          // If translatedCategory is an array, look for the lang object
+          if (Array.isArray(item.translatedCategory)) {
+            const found = item.translatedCategory.find(
+              (t) => t.lang === lang && t.value
+            );
+            if (found) {
+              return {
+                ...item,
+                translatedCategory: {
+                  ...item.translatedCategory,
+                  [lang]: found.value,
+                },
+              };
+            }
+          }
+          // If already translated for this lang in object format, use it
+          if (item.translatedCategory && item.translatedCategory[lang]) {
+            return item;
+          }
+          // Otherwise, translate and save
+          const translated = await translateDirectly(item.category, lang);
+          return {
+            ...item,
+            translatedCategory: {
+              ...(item.translatedCategory || {}),
+              [lang]: translated,
+            },
+          };
+        })
       );
-      console.log("Translations:", translations);
-      setTranslatedCategories(translations);
+      setItems(
+        initializeItems().map((item, idx) => ({
+          ...item,
+          translatedCategory: newItems[idx].translatedCategory,
+        }))
+      );
     };
     translateCategories();
+    // eslint-disable-next-line
   }, [pages, i18n.language]);
 
   const handleAddItem = async () => {
@@ -213,7 +251,11 @@ export default function NavItemList({
               index={index}
               onSelect={onSelect}
               editCategories={editCategories}
-              translatedCategory={translatedCategories[index]}
+              translatedCategory={
+                item.translatedCategory && item.translatedCategory[i18n.language]
+                  ? item.translatedCategory[i18n.language]
+                  : item.category
+              }
               delCategoryCallback={handleDelCategory}
             />
           ))}

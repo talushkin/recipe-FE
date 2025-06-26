@@ -97,7 +97,7 @@ export default function Main(props) {
             <div className="main-content col">
               {selectedCategory && (
                 <MainContent
-                  selected={selectedCategory}
+                  selectedCategory={selectedCategory}
                   selectedRecipe={selectedRecipe}
                   addRecipe={newRecipe}
                   data={recipes}
