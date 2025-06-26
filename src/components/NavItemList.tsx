@@ -23,6 +23,25 @@ import { CSS } from "@dnd-kit/utilities";
 import i18n from "../i18n";
 
 const isRTL = i18n.dir() === "rtl";
+
+interface CategoryItem {
+  _id: string;
+  category: string;
+  createdAt?: string;
+  itemPage?: any[];
+  priority?: number;
+  translatedCategory?: { [lang: string]: string } | Array<{ lang: string; value: string; _id?: string }>;
+}
+
+interface SortableItemProps {
+  item: CategoryItem;
+  index: number;
+  onSelect: (item: CategoryItem) => void;
+  editCategories: boolean;
+  translatedCategory: string;
+  delCategoryCallback: (id: string) => void;
+}
+
 // A sortable item component using dnd‑kit
 function SortableItem({
   item,
@@ -31,7 +50,7 @@ function SortableItem({
   editCategories,
   translatedCategory,
   delCategoryCallback,
-}) {
+}: SortableItemProps) {
   const { attributes, listeners, setNodeRef, transform, transition } = useSortable({
     id: item._id,
   });
@@ -107,13 +126,21 @@ function SortableItem({
   );
 }
 
+interface NavItemListProps {
+  pages: CategoryItem[];
+  onSelect: (item: CategoryItem) => void;
+  editCategories: boolean;
+  onOrderChange?: (items: CategoryItem[]) => void;
+  setReorder: (val: boolean) => void;
+}
+
 export default function NavItemList({
   pages = [],
   onSelect,
   editCategories,
   onOrderChange,
   setReorder,
-}) {
+}: NavItemListProps) {
   const { t, i18n } = useTranslation();
   const dispatch = useDispatch();
 
