@@ -3,8 +3,8 @@ import NavItemList from "./NavItemList";
 import { useTranslation } from "react-i18next";
 import { Button } from "@mui/material";
 import { useNavigate } from "react-router-dom";
-import ThemeModeButton from "./ThemeModeButton.jsx";
-import LanguageSelector from "./LanguageSelector.jsx";
+import ThemeModeButton from "./ThemeModeButton";
+import LanguageSelector from "./LanguageSelector";
 
 export default function NavMenu({ pages, onSelect, isOpen, language, desktop, isDarkMode, toggleDarkMode, onHamburgerClick }) {
   const { t, i18n } = useTranslation();

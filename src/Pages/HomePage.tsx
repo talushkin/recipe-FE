@@ -9,7 +9,7 @@ import { lightTheme, darkTheme } from "../components/themes";
 import GlobalStyle from "../components/GlobalStyle";
 import * as store from "../utils/storage"; // adjust path if needed
 import { useNavigate } from "react-router-dom";
-import FooterBar from "../components/FooterBar.jsx"; // <-- Add this import
+import FooterBar from "../components/FooterBar"; // <-- Add this import
 
 export default function Main(props) {
   const { setSelectedRecipe, selectedRecipe, newRecipe, recipes, setRecipes, selectedCategory, setSelectedCategory } = props;
