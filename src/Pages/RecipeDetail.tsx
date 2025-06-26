@@ -2,7 +2,16 @@ import React from "react";
 import { useParams } from "react-router-dom";
 import HomePage from "./HomePage";
 
-export default function RecipeDetail(props) {
+interface RecipeDetailProps {
+  selectedRecipe: any;
+  newRecipe: any;
+  recipes: any;
+  setRecipes: (recipes: any) => void;
+  setSelectedCategory: (cat: any) => void;
+  selectedCategory: any;
+}
+
+export default function RecipeDetail(props: RecipeDetailProps) {
   const { selectedRecipe, newRecipe, recipes, setRecipes, setSelectedCategory, selectedCategory } = props;
   const { category, title } = useParams();
   console.log('RecipeDetail params:', useParams());

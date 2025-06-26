@@ -9,9 +9,19 @@ import { lightTheme, darkTheme } from "../components/themes";
 import GlobalStyle from "../components/GlobalStyle";
 import * as store from "../utils/storage"; // adjust path if needed
 import { useNavigate } from "react-router-dom";
-import FooterBar from "../components/FooterBar"; // <-- Add this import
+import FooterBar from "../components/FooterBar";
 
-export default function Main(props) {
+interface HomePageProps {
+  setSelectedRecipe: (recipe: any) => void;
+  selectedRecipe: any;
+  newRecipe: any;
+  recipes: any;
+  setRecipes: (recipes: any) => void;
+  selectedCategory: any;
+  setSelectedCategory: (cat: any) => void;
+}
+
+export default function Main(props: HomePageProps) {
   const { setSelectedRecipe, selectedRecipe, newRecipe, recipes, setRecipes, selectedCategory, setSelectedCategory } = props;
   const [menuOpen, setMenuOpen] = useState(false);
   const { i18n } = useTranslation();
