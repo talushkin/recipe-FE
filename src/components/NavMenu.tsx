@@ -47,7 +47,8 @@ export default function NavMenu({ categories, onSelect, isOpen, language, deskto
     console.log("Selected category:", item);
   };
 
-  const handleLanguageChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+  // Use correct event type for LanguageSelector (SelectChangeEvent<string>)
+  const handleLanguageChange = (event: { target: { value: string } }) => {
     const newLang = event.target.value;
     i18n.changeLanguage(newLang);
   };

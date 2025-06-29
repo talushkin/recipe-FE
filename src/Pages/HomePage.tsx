@@ -10,6 +10,7 @@ import GlobalStyle from "../components/GlobalStyle";
 import { useNavigate } from "react-router-dom";
 import FooterBar from "../components/FooterBar";
 import type { Category, Recipe, SiteData } from "../utils/storage";
+import type { i18n as I18nType } from "i18next";
 
 interface HomePageProps {
   setSelectedRecipe: (recipe: Recipe | null) => void;
@@ -24,47 +25,41 @@ interface HomePageProps {
 export default function Main(props: HomePageProps) {
   const { setSelectedRecipe, selectedRecipe, newRecipe, recipes, setRecipes, selectedCategory, setSelectedCategory } = props;
   const [menuOpen, setMenuOpen] = useState<boolean>(false);
-  const { i18n } = useTranslation();
+  const { i18n } = useTranslation() as { i18n: I18nType };
   const [isDarkMode, setIsDarkMode] = useState<boolean>(false);
-  const [desktop, setDesktop] = useState<boolean>(window.innerWidth > 768); // Check if desktop
+  const [desktop, setDesktop] = useState<boolean>(typeof window !== 'undefined' ? window.innerWidth > 768 : true);
   const navigate = useNavigate();
 
-  // Add toggleDarkMode function
-  const toggleDarkMode = () => {
+  const toggleDarkMode = (): void => {
     setIsDarkMode((prev) => !prev);
   };
 
-  // Define the handleHamburgerClick function
-  const handleHamburgerClick = () => {
-    console.log("Hamburger clicked", desktop);
-    console.log("menuOpen", menuOpen);
+  const handleHamburgerClick = (): void => {
     if (desktop) {
-      setMenuOpen(true); // Always open on desktop
+      setMenuOpen(true);
       return;
     }
-    setMenuOpen((prevMenuOpen) => !prevMenuOpen); // Toggle the menu state
+    setMenuOpen((prevMenuOpen) => !prevMenuOpen);
     if (!menuOpen) {
-      window.scrollTo({ top: 0, behavior: 'smooth' }); // Scroll to top when opening
-      console.log("Should show the menu", menuOpen);
+      window.scrollTo({ top: 0, behavior: 'smooth' });
     }
   };
 
   useEffect(() => {
-    const handleResize = () => {
-      setDesktop(window.innerWidth > 768); // Update desktop state based on window width
+    const handleResize = (): void => {
+      setDesktop(window.innerWidth > 768);
     };
-    handleResize(); // Initial check on mount
-    window.addEventListener("resize", handleResize); // Add event listener for window resize
-  }, [window.innerWidth]);
+    handleResize();
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
 
-  // Helper to detect mobile
   const isMobile = !desktop;
 
   return (
     <ThemeProvider theme={isDarkMode ? darkTheme : lightTheme}>
       <div className="App">
-        <GlobalStyle />
-
+        <GlobalStyle theme={isDarkMode ? darkTheme : lightTheme} />
         <div className="TOP">
           <HeaderBar
             desktop={desktop}
@@ -95,7 +90,6 @@ export default function Main(props: HomePageProps) {
                 onHamburgerClick={handleHamburgerClick}
               />
             </div>
-
             <div className="main-content col">
               {selectedCategory && (
                 <MainContent

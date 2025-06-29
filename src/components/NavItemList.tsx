@@ -24,6 +24,12 @@ import type { Category, Categories } from "../utils/storage";
 
 const isRTL = i18n.dir() === "rtl";
 
+// Add priority to Category type for sorting
+interface CategoryWithPriority extends Category {
+  priority: number;
+  translatedCategoryObj?: { [lang: string]: string };
+}
+
 interface SortableItemProps {
   item: Category;
   index: number;
@@ -135,13 +141,19 @@ export default function NavItemList({
   const { t, i18n } = useTranslation();
   const dispatch = useDispatch();
 
-  const [items, setItems] = useState<Categories>(categories);
-  const [inputValue, setInputValue] = useState("");
-  const [newCat, setNewCat] = useState(false);
+  // Convert incoming categories to CategoryWithPriority[]
+  const toCategoryWithPriority = (cat: Category, idx: number): CategoryWithPriority => ({
+    ...cat,
+    priority: (cat as any).priority ?? idx + 1,
+    translatedCategoryObj: {},
+  });
+  const [items, setItems] = useState<CategoryWithPriority[]>(categories.map(toCategoryWithPriority));
+  const [inputValue, setInputValue] = useState<string>("");
+  const [newCat, setNewCat] = useState<boolean>(false);
 
   // Sync items with categories when categories change
   useEffect(() => {
-    setItems(categories);
+    setItems(categories.map(toCategoryWithPriority));
   }, [categories]);
 
   // Translate category names and cache them per language
@@ -150,43 +162,18 @@ export default function NavItemList({
       if (categories.length === 0) return;
       const lang = i18n.language;
       const newItems = await Promise.all(
-        categories.map(async (item) => {
-          // If translatedCategory is an array, look for the lang object
-          if (Array.isArray(item.translatedCategory)) {
-            const found = item.translatedCategory.find(
-              (t) => t.lang === lang && t.value
-            );
-            if (found) {
-              return {
-                ...item,
-                translatedCategory: {
-                  ...item.translatedCategory,
-                  [lang]: found.value,
-                },
-              };
-            }
+        categories.map(async (item, idx) => {
+          let translatedCategoryObj = (items[idx] && items[idx].translatedCategoryObj) || {};
+          if (!translatedCategoryObj[lang]) {
+            translatedCategoryObj[lang] = await translateDirectly(item.category, lang);
           }
-          // If already translated for this lang in object format, use it
-          if (item.translatedCategory && item.translatedCategory[lang]) {
-            return item;
-          }
-          // Otherwise, translate and save
-          const translated = await translateDirectly(item.category, lang);
           return {
-            ...item,
-            translatedCategory: {
-              ...(item.translatedCategory || {}),
-              [lang]: translated,
-            },
+            ...toCategoryWithPriority(item, idx),
+            translatedCategoryObj,
           };
         })
       );
-      setItems(
-        categories.map((item, idx) => ({
-          ...item,
-          translatedCategory: newItems[idx].translatedCategory,
-        }))
-      );
+      setItems(newItems);
     };
     translateCategories();
     // eslint-disable-next-line
@@ -203,19 +190,20 @@ export default function NavItemList({
       // fallback to original if translation fails
       englishCategory = inputValue.trim();
     }
-    const newItem = {
-      _id: Date.now() + Math.random(),
+    const newItem: CategoryWithPriority = {
+      _id: String(Date.now() + Math.random()),
       category: englishCategory,
-      createdAt: dayjs().format("DD-MM-YYYY"),
       itemPage: [],
+      priority: items.length + 1,
+      translatedCategoryObj: { [i18n.language]: inputValue.trim() },
     };
-    dispatch(addCategoryThunk(englishCategory));
+    dispatch(addCategoryThunk(englishCategory) as any);
     setItems([...items, newItem]);
     setInputValue("");
   };
 
   // Callback when drag ends: update order, set new priorities, persist via redux
-  const handleDragEnd = (event) => {
+  const handleDragEnd = (event: any) => {
     const { active, over } = event;
     console.log("Drag ended", active, over);
     if (!over) return; // No item was dropped
@@ -227,22 +215,22 @@ export default function NavItemList({
       newItems = newItems.map((item, idx) => ({ ...item, priority: idx + 1 }));
       console.log("Moved items", newItems);
       setItems(newItems);
-      dispatch(reorderCategoriesThunk(newItems));
+      dispatch(reorderCategoriesThunk(newItems) as any);
       // Notify parent if needed
-      onOrderChange && onOrderChange(newItems);
+      onOrderChange && onOrderChange(newItems as Category[]);
       setReorder(true);
     }
   };
 
   // Callback to delete an item from state using redux thunk
-  const handleDelCategory = (id) => {
+  const handleDelCategory = (id: string) => {
     const categoryToDelete = items.find((i) => i._id === id)?.category || "";
-    dispatch(delCategoryThunk({ categoryId: id, categoryName: categoryToDelete }));
+    dispatch(delCategoryThunk({ categoryId: id, categoryName: categoryToDelete }) as any);
     setItems((prevItems) => prevItems.filter((i) => i._id !== id));
   };
 
   // Sort items by priority before rendering
-  const sortedItems = [...items].sort((a, b) => a.priority - b.priority);
+  const sortedItems = [...items].sort((a, b) => (a.priority || 0) - (b.priority || 0));
 
   return (
     <>
@@ -256,8 +244,8 @@ export default function NavItemList({
               onSelect={onSelect}
               editCategories={editCategories}
               translatedCategory={
-                item.translatedCategory && item.translatedCategory[i18n.language]
-                  ? item.translatedCategory[i18n.language]
+                item.translatedCategoryObj && item.translatedCategoryObj[i18n.language]
+                  ? item.translatedCategoryObj[i18n.language]
                   : item.category
               }
               delCategoryCallback={handleDelCategory}
@@ -279,59 +267,56 @@ export default function NavItemList({
             },
           }}
         >
-      + {t("addCategory")}
-    </Button >
-      )
-}
-{
-  newCat && (
-    <div style={{ width: "100%", display: "flex", alignItems: "center", gap: "0.5rem" }}>
-      <input
-        type="text"
-        placeholder={t("addCategory")}
-        value={inputValue}
-        autoFocus
-        onChange={(e) => setInputValue(e.target.value)}
-        onKeyDown={(e) => {
-          if (e.key === "Escape" || e.key === "x" || e.key === "X") {
-            setNewCat(false);
-            setInputValue("");
-          }
-          if (e.key === "Enter") {
-            handleAddItem();
-          }
-        }}
-        className="p-2 rounded w-full"
-        style={{
-          width: "calc(100% - 0.25rem)", // 80% of parent minus half the gap
-          minWidth: "80px",
-          maxWidth: "calc(100% - 0.25rem)",
-        }}
-      />
-      <button
-        type="button"
-        onClick={() => {
-          setNewCat(false);
-          setInputValue("");
-        }}
-        style={{
-          width: "20%",
-          minWidth: "40px",
-          maxWidth: "60px",
-          background: "darkgreen",
-          color: "white",
-          border: "none",
-          borderRadius: "4px",
-          padding: "0.5rem 1rem",
-          cursor: "pointer",
-          fontWeight: "bold",
-        }}
-      >
-        ×
-      </button>
-    </div>
-  )
-}
+          + {t("addCategory")}
+        </Button>
+      )}
+      {newCat && (
+        <div style={{ width: "100%", display: "flex", alignItems: "center", gap: "0.5rem" }}>
+          <input
+            type="text"
+            placeholder={t("addCategory") as string}
+            value={inputValue}
+            autoFocus
+            onChange={(e: React.ChangeEvent<HTMLInputElement>) => setInputValue(e.target.value)}
+            onKeyDown={(e: React.KeyboardEvent<HTMLInputElement>) => {
+              if (e.key === "Escape" || e.key === "x" || e.key === "X") {
+                setNewCat(false);
+                setInputValue("");
+              }
+              if (e.key === "Enter") {
+                handleAddItem();
+              }
+            }}
+            className="p-2 rounded w-full"
+            style={{
+              width: "calc(100% - 0.25rem)",
+              minWidth: "80px",
+              maxWidth: "calc(100% - 0.25rem)",
+            }}
+          />
+          <button
+            type="button"
+            onClick={() => {
+              setNewCat(false);
+              setInputValue("");
+            }}
+            style={{
+              width: "20%",
+              minWidth: "40px",
+              maxWidth: "60px",
+              background: "darkgreen",
+              color: "white",
+              border: "none",
+              borderRadius: "4px",
+              padding: "0.5rem 1rem",
+              cursor: "pointer",
+              fontWeight: "bold",
+            }}
+          >
+            ×
+          </button>
+        </div>
+      )}
     </>
   );
 }
