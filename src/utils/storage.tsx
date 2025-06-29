@@ -27,9 +27,11 @@ export interface Category {
   itemPage: Recipe[];
 }
 
+export type Categories = Category[];
+
 export interface SiteData {
   header: { logo: string };
-  categories: Category[]; // changed from pages to categories
+  categories: Categories;
 }
 
 export interface SiteResponse {

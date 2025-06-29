@@ -1,40 +1,40 @@
 import React from "react";
 import { useParams } from "react-router-dom";
 import HomePage from "./HomePage";
-import data from "../data/recipes.json";
+import type { Category, Recipe, SiteData } from "../utils/storage";
 
 interface AddRecipeProps {
-  recipes: any;
-  setRecipes: (recipes: any) => void;
-  selected: any;
-  setSelected: (selected: any) => void;
+  recipes: SiteData;
+  setRecipes: (recipes: SiteData) => void;
+  selectedCategory: Category | null;
+  setSelectedCategory: (cat: Category | null) => void;
+  selectedRecipe: Recipe | null;
+  setSelectedRecipe: (recipe: Recipe | null) => void;
 }
 
 export default function AddRecipe(props: AddRecipeProps) {
-  const { recipes, setRecipes, selected, setSelected } = props;
-  const { category, title } = useParams<{ category?: string; title?: string }>();
-  console.log(useParams());
-  const categories = data?.site?.categories || [];
-
-  // Normalize category (lowercase) for comparison
+  const { recipes, setRecipes, selectedCategory, setSelectedCategory, selectedRecipe, setSelectedRecipe } = props;
+  const { category } = useParams<{ category?: string }>();
+  const categories = recipes.categories || [];
   const selectedCategoryData = categories.find(
-    (cat: any) => cat?.category?.toLowerCase() === category?.toLowerCase()
-  );
-
+    (cat: Category) => cat?.category?.toLowerCase() === category?.toLowerCase()
+  ) || null;
+  React.useEffect(() => {
+    setSelectedCategory(selectedCategoryData);
+  }, [category]);
   if (selectedCategoryData) {
-    console.log("Found category:", selectedCategoryData);
     return (
       <HomePage
         selectedCategory={selectedCategoryData}
-        newRecipe={true}
+        newRecipe={{ title: "", ingredients: "", preparation: "" }}
         recipes={recipes}
         setRecipes={setRecipes}
-        selected={selected}
-        setSelected={setSelected}
+        selectedRecipe={selectedRecipe}
+        setSelectedRecipe={setSelectedRecipe}
+        setSelectedCategory={setSelectedCategory}
       />
     );
   } else {
-    console.warn("Category not found:", category);
     return <div>Category not found.</div>;
   }
 }

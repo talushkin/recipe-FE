@@ -5,11 +5,11 @@ import { Button } from "@mui/material";
 import { useNavigate } from "react-router-dom";
 import ThemeModeButton from "./ThemeModeButton";
 import LanguageSelector from "./LanguageSelector";
-import type { Category } from "../utils/storage";
+import type { Category, Categories } from "../utils/storage";
 
 interface NavMenuProps {
-  categories: Category[];
-  onSelect: (cat: Category) => void;
+  categories: Categories;
+  onSelect: (cat: Category | null) => void;
   isOpen: boolean;
   language: string;
   desktop: boolean;
@@ -22,7 +22,7 @@ export default function NavMenu({ categories, onSelect, isOpen, language, deskto
   const { t, i18n } = useTranslation();
   const [editCategories, setEditCategories] = useState<boolean>(false);
   const [reorder, setReorder] = useState<boolean>(false);
-  const [orderedCategories, setOrderedCategories] = useState<Category[]>(categories);
+  const [orderedCategories, setOrderedCategories] = useState<Categories>(categories);
 
   const navigate = useNavigate();
 

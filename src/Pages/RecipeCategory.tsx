@@ -1,38 +1,35 @@
 import React from "react";
 import { useParams } from "react-router-dom";
 import HomePage from "./HomePage";
-import data from "../data/recipes.json";
+import type { Category, Recipe, SiteData } from "../utils/storage";
 
 interface RecipeCategoryProps {
-  selectedRecipe: any;
-  newRecipe: any;
-  recipes: any;
-  setRecipes: (recipes: any) => void;
-  selectedCategory: any;
-  setSelectedCategory: (cat: any) => void;
+  selectedRecipe: Recipe | null;
+  newRecipe?: Recipe | null;
+  recipes: SiteData;
+  setRecipes: (recipes: SiteData) => void;
+  selectedCategory: Category | null;
+  setSelectedCategory: (cat: Category | null) => void;
+  setSelectedRecipe: (recipe: Recipe | null) => void;
 }
 
 export default function RecipeCategory(props: RecipeCategoryProps) {
-  const { selectedRecipe, newRecipe, recipes, setRecipes, selectedCategory, setSelectedCategory } = props;
-  const { category, title } = useParams<{ category?: string; title?: string }>();
-  console.log('trying to find category:', useParams());
-  const categories = recipes?.site?.categories || [];
-
-  // Normalize category (lowercase) for comparison
+  const { selectedRecipe, newRecipe, recipes, setRecipes, selectedCategory, setSelectedCategory, setSelectedRecipe } = props;
+  const { category } = useParams<{ category?: string }>();
+  const categories = recipes.categories || [];
   const selectedCategoryData = categories.find(
-    (cat: any) => cat?.category?.toLowerCase() === category?.toLowerCase()
-  );
-
-  if (!selectedCategoryData) {
-    console.warn("Category recipes not found, adding first one now:", category)
-  }
-
-  setSelectedCategory(category);
-  console.log("Found category:", selectedCategoryData);
+    (cat: Category) => cat?.category?.toLowerCase() === category?.toLowerCase()
+  ) || null;
+  React.useEffect(() => {
+    setSelectedCategory(selectedCategoryData);
+  }, [category]);
   return <HomePage
     recipes={recipes}
     setRecipes={setRecipes}
     selectedCategory={selectedCategoryData}
     setSelectedCategory={setSelectedCategory}
+    selectedRecipe={selectedRecipe}
+    setSelectedRecipe={setSelectedRecipe}
+    newRecipe={null}
   />;
 }

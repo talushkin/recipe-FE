@@ -20,7 +20,7 @@ import {
 } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import i18n from "../i18n";
-import type { Category } from "../utils/storage";
+import type { Category, Categories } from "../utils/storage";
 
 const isRTL = i18n.dir() === "rtl";
 
@@ -118,10 +118,10 @@ function SortableItem({
 }
 
 interface NavItemListProps {
-  categories: Category[];
+  categories: Categories;
   onSelect: (item: Category) => void;
   editCategories: boolean;
-  onOrderChange?: (items: Category[]) => void;
+  onOrderChange?: (items: Categories) => void;
   setReorder: (val: boolean) => void;
 }
 
@@ -135,7 +135,7 @@ export default function NavItemList({
   const { t, i18n } = useTranslation();
   const dispatch = useDispatch();
 
-  const [items, setItems] = useState<Category[]>(categories);
+  const [items, setItems] = useState<Categories>(categories);
   const [inputValue, setInputValue] = useState("");
   const [newCat, setNewCat] = useState(false);
 

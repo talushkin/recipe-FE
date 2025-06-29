@@ -7,18 +7,18 @@ import { useTranslation } from "react-i18next";
 import { ThemeProvider } from "styled-components";
 import { lightTheme, darkTheme } from "../components/themes";
 import GlobalStyle from "../components/GlobalStyle";
-import * as store from "../utils/storage"; // adjust path if needed
 import { useNavigate } from "react-router-dom";
 import FooterBar from "../components/FooterBar";
+import type { Category, Recipe, SiteData } from "../utils/storage";
 
 interface HomePageProps {
-  setSelectedRecipe: (recipe: any) => void;
-  selectedRecipe: any;
-  newRecipe: any;
-  recipes: any;
-  setRecipes: (recipes: any) => void;
-  selectedCategory: any;
-  setSelectedCategory: (cat: any) => void;
+  setSelectedRecipe: (recipe: Recipe | null) => void;
+  selectedRecipe: Recipe | null;
+  newRecipe?: Recipe | null;
+  recipes: SiteData;
+  setRecipes: (recipes: SiteData) => void;
+  selectedCategory: Category | null;
+  setSelectedCategory: (cat: Category | null) => void;
 }
 
 export default function Main(props: HomePageProps) {
@@ -68,17 +68,14 @@ export default function Main(props: HomePageProps) {
         <div className="TOP">
           <HeaderBar
             desktop={desktop}
-            logo={"https://vt-photos.s3.amazonaws.com/recipe-app-icon-generated-image.png"}
+            logo={recipes.header?.logo}
             onHamburgerClick={handleHamburgerClick}
-            categories={recipes?.site?.categories}
+            categories={recipes.categories}
             isDarkMode={isDarkMode}
-            data={recipes}
-            toggleDarkMode={toggleDarkMode}
             setSelectedCategory={setSelectedCategory}
             setSelectedRecipe={setSelectedRecipe}
             selectedRecipe={selectedRecipe}
-            selectedCategory={selectedCategory}
-            showLangAndTheme={!isMobile} // Pass prop to hide on mobile
+            newRecipe={newRecipe}
           />
         </div>
         <div className="container-fluid ps-0 pe-0">
@@ -90,16 +87,11 @@ export default function Main(props: HomePageProps) {
               <NavMenu
                 isDarkMode={isDarkMode}
                 toggleDarkMode={toggleDarkMode}
-                categories={recipes?.site?.categories}
-                isOpen={menuOpen || desktop}
+                categories={recipes.categories}
+                isOpen={menuOpen}
                 onSelect={setSelectedCategory}
-                editCategories={false}
-                data={recipes}
                 desktop={desktop}
                 language={i18n.language}
-                setSelectedRecipe={setSelectedRecipe}
-                selectedRecipe={selectedRecipe}
-                showLangAndTheme={!isMobile} // Hide from menu on mobile
                 onHamburgerClick={handleHamburgerClick}
               />
             </div>
@@ -110,10 +102,8 @@ export default function Main(props: HomePageProps) {
                   selectedCategory={selectedCategory}
                   selectedRecipe={selectedRecipe}
                   addRecipe={newRecipe}
-                  data={recipes}
                   desktop={desktop}
                   isDarkMode={isDarkMode}
-                  setSelectedRecipe={setSelectedRecipe}
                 />
               )}
             </div>

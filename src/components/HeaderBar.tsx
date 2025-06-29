@@ -1,67 +1,73 @@
 import React, { useState, useRef, useEffect } from "react";
 import { useTranslation } from "react-i18next";
-import { Autocomplete, TextField, InputAdornment } from "@mui/material";
+import { Autocomplete, TextField } from "@mui/material";
 import RecipeDialog from "./RecipeDialog";
 import cardboardTexture from "../assets/cardboard-texture.jpg";
-import ClearIcon from "@mui/icons-material/Clear";
 import SearchIcon from "@mui/icons-material/Search";
-import { translateDirectly } from "./translateAI";
-import { useNavigate } from "react-router-dom"; // <-- Add this line
+import { useNavigate } from "react-router-dom";
+import { Category, Recipe } from "../utils/storage";
+
+interface HeaderBarProps {
+  logo?: string;
+  onHamburgerClick?: () => void;
+  categories: Category[];
+  desktop: boolean;
+  setSelectedCategory?: (cat: Category | null) => void;
+  setSelectedRecipe?: (recipe: Recipe | null) => void;
+  selectedRecipe?: Recipe | null;
+  setRecipes?: (recipes: Recipe[]) => void;
+  newRecipe?: Recipe | null;
+  isDarkMode?: boolean;
+}
 
 export default function HeaderBar({
   logo,
   onHamburgerClick,
   categories,
   desktop,
-  setSelectedCategory, // <-- Add prop for setting selected category
+  setSelectedCategory,
   setSelectedRecipe,
-  selectedRecipe, // <-- Add prop for selected recipe
-  setRecipes, // <-- Add prop for setting recipes
-  newRecipe, // <-- Add prop for new recipe 
-  isDarkMode, // <-- Add prop for dark mode
-
-}) {
-  const navigate = useNavigate(); // <-- Add this line
+  selectedRecipe,
+  setRecipes,
+  newRecipe,
+  isDarkMode,
+}: HeaderBarProps) {
+  const navigate = useNavigate();
   const { t, i18n } = useTranslation();
   const [searchQuery, setSearchQuery] = useState("");
-  const [filteredSuggestions, setFilteredSuggestions] = useState([]);
+  const [filteredSuggestions, setFilteredSuggestions] = useState<{
+    title: string;
+    category: string;
+    originalTitle: string;
+  }[]>([]);
   const [dialogOpen, setDialogOpen] = useState(false);
-  const [language, setLanguage] = useState(i18n.language);
-
-  // Track if search is active (focused or has value)
+  const [language] = useState(i18n.language);
   const [searchActive, setSearchActive] = useState(false);
   const [showMobileSearch, setShowMobileSearch] = useState(false);
+  const searchInputRef = useRef<HTMLInputElement>(null);
+  const [translatedOptions, setTranslatedOptions] = useState<{
+    title: string;
+    category: string;
+    originalTitle: string;
+  }[]>([]);
 
-  const searchInputRef = useRef(null);
-
-  // Reset the input value in the DOM when searchQuery is reset
-  useEffect(() => {
-    if (searchInputRef.current && searchQuery === "") {
-      searchInputRef.current.value = "";
-    }
-  }, [searchQuery]);
-
-  // Replace the translatedTitles state with an array of objects: { title, category }
-  const [translatedOptions, setTranslatedOptions] = useState([]);
-
-  // Build allRecipes as before
   const allRecipes = categories?.flatMap((category) =>
     category.itemPage.map((r) => ({ ...r, category: category.category }))
   );
 
   useEffect(() => {
-          if (!allRecipes) return;
-          setTranslatedOptions(
-            allRecipes.map((r) => ({
-              title: r.title, // Displayed (English) title
-              category: r.category,
-              originalTitle: r.title, // Save original English title
-            }))
-          );  
+    if (!allRecipes) return;
+    setTranslatedOptions(
+      allRecipes.map((r) => ({
+        title: r.title,
+        category: r.category,
+        originalTitle: r.title,
+      }))
+    );
   }, [allRecipes, i18n.language]);
 
-  const handleSearchChange = (event, value) => {
-    setShowMobileSearch(false); // Reset mobile search when input is cleared
+  const handleSearchChange = (_event: any, value: string) => {
+    setShowMobileSearch(false);
     setSearchQuery(value);
     if (!value) {
       setFilteredSuggestions([]);
@@ -73,14 +79,10 @@ export default function HeaderBar({
     setFilteredSuggestions(filtered);
   };
 
-  const handleSelect = (event, value) => {
-    // Find the option object by title
+  const handleSelect = (_event: any, value: string | null) => {
     const option = translatedOptions.find((opt) => opt.title === value);
     if (option) {
-      // Find the original recipe object by originalTitle
-      const recipe = allRecipes.find(
-        (r) => r.title === option.originalTitle
-      );
+      const recipe = allRecipes.find((r) => r.title === option.originalTitle);
       if (recipe) {
         setDialogOpen(true);
         setSearchActive(false);
@@ -93,39 +95,32 @@ export default function HeaderBar({
         navigate(
           `/recipes/${encodeURIComponent(recipe.category)}/${encodeURIComponent(recipe.title)}`
         );
-        window.location.reload(); // <-- Reload after navigation
+        window.location.reload();
       }
     }
   };
 
-  // Handle ESC key to exit search and fade in ham/recipes
-  const handleKeyDown = (event) => {
+  const handleKeyDown = (event: React.KeyboardEvent<HTMLInputElement>) => {
     if (event.key === "Escape" && searchActive) {
       setSearchActive(false);
-      setSearchQuery(""); // <-- Reset the search text
+      setSearchQuery("");
       setFilteredSuggestions([]);
-      console.log(
-        searchQuery,
-        "Search closed, fading in hamburger and recipes"
-      );
-      // Optionally blur the input
       if (searchInputRef.current) {
         searchInputRef.current.blur();
       }
     }
   };
 
-  // Fade and width animation styles for left side (hamburger/logo/title)
   const fadeStyle = {
     transition:
       "opacity 0.4s cubic-bezier(.4,0,.2,1), width 0.4s cubic-bezier(.4,0,.2,1)",
     opacity: searchActive ? 0 : 1,
     width: searchActive ? 0 : "auto",
-    pointerEvents: searchActive ? "none" : "auto",
+    pointerEvents: searchActive ? ("none" as React.CSSProperties["pointerEvents"]) : ("auto" as React.CSSProperties["pointerEvents"]),
     willChange: "opacity,width",
-    overflow: "hidden",
+    overflow: "hidden" as const,
     minWidth: 0,
-    display: searchActive ? "none" : "flex", // Hide completely when faded out
+    display: searchActive ? "none" : "flex",
   };
 
   return (
@@ -146,19 +141,26 @@ export default function HeaderBar({
         {/* Left side: Hamburger and Site Name */}
         <div
           style={{
-            display: searchActive ? "none" : "flex",
             alignItems: "center",
             gap: "8px",
-            ...fadeStyle,
+            transition:
+              "opacity 0.4s cubic-bezier(.4,0,.2,1), width 0.4s cubic-bezier(.4,0,.2,1)",
+            opacity: searchActive ? 0 : 1,
+            width: searchActive ? 0 : "auto",
+            pointerEvents: searchActive ? ("none" as React.CSSProperties["pointerEvents"]) : ("auto" as React.CSSProperties["pointerEvents"]),
+            willChange: "opacity,width",
+            overflow: "hidden" as const,
+            minWidth: 0,
+            display: searchActive ? "none" : "flex",
           }}
         >
           {!desktop && (
-  <button className="hamburger" onClick={onHamburgerClick}>
-    ☰
-  </button>
-)}
+            <button className="hamburger" onClick={onHamburgerClick}>
+              ☰
+            </button>
+          )}
           <img
-            src="https://vt-photos.s3.amazonaws.com/recipe-app-icon-generated-image.png"
+            src={logo || "https://vt-photos.s3.amazonaws.com/recipe-app-icon-generated-image.png"}
             alt="Logo"
             style={{
               width: "60px",
@@ -169,9 +171,7 @@ export default function HeaderBar({
         </div>
         {/* Search input or icon */}
         <div style={{ flex: 0, maxWidth: "100%" }}>
-          {/* Show magnifier on small screens, input on desktop or when expanded */}
           <div style={{ display: "flex", alignItems: "center" }}>
-            {/* Mobile: show icon if not expanded */}
             <span
               style={{
                 display:
@@ -188,7 +188,6 @@ export default function HeaderBar({
             >
               <SearchIcon sx={{ fontSize: 28 }} />
             </span>
-            {/* Show input if desktop or mobile search expanded */}
             <Autocomplete
               freeSolo
               options={translatedOptions.map((opt) => opt.title)}
@@ -227,12 +226,6 @@ export default function HeaderBar({
                     },
                     display:
                       desktop || showMobileSearch ? "block" : "none",
-                    // width:
-                    //   !desktop && showMobileSearch
-                    //     ? "100vw"
-                    //     : desktop
-                    //     ? "200px"
-                    //     : "0",
                     transition: "width 0.3s",
                   }}
                   InputProps={{
@@ -294,7 +287,6 @@ export default function HeaderBar({
           </div>
         </div>
       </div>
-
     </>
   );
 }
