@@ -26,11 +26,43 @@ import { useNavigate } from "react-router-dom";
 import AddIcon from "@mui/icons-material/Add";
 import SmartToyIcon from "@mui/icons-material/SmartToy";
 
+// --- Types ---
+interface Recipe {
+  _id?: string;
+  title: string;
+  ingredients: string;
+  preparation: string;
+  imageUrl?: string;
+  createdAt?: string;
+  categoryId?: string;
+  category?: string;
+}
 
+interface Category {
+  _id: string;
+  category: string;
+  translatedCategory?: { [lang: string]: string } | Array<{ lang: string; value: string; _id?: string }>;
+  itemPage: Recipe[];
+}
 
-function SortableRecipe({ recipe, index, onSelect }) {
+interface MainContentProps {
+  data: any;
+  selectedCategory: Category;
+  selectedRecipe: Recipe | null;
+  addRecipe: any;
+  desktop: boolean;
+  isDarkMode: boolean;
+}
+
+interface SortableRecipeProps {
+  recipe: Recipe;
+  index: number;
+  onSelect: (recipe: Recipe) => void;
+}
+
+function SortableRecipe({ recipe, index, onSelect }: SortableRecipeProps) {
   const { attributes, listeners, setNodeRef, transform, transition } = useSortable({
-    id: recipe._id,
+    id: recipe._id!,
   });
   const style = {
     transform: CSS.Transform.toString(transform),
@@ -51,29 +83,35 @@ function SortableRecipe({ recipe, index, onSelect }) {
       {...listeners}
       onClick={() => onSelect(recipe)}
     >
-      <CaseCard item={recipe} category={recipe.category} index={index + 1} />
+      <CaseCard item={recipe} category={recipe.category || ""} index={index + 1} />
     </div>
   );
 }
 
-export default function MainContent({ data, selectedCategory, selectedRecipe, addRecipe, desktop, isDarkMode }) {
+const MainContent: React.FC<MainContentProps> = ({
+  data,
+  selectedCategory,
+  selectedRecipe,
+  addRecipe,
+  desktop,
+  isDarkMode,
+}) => {
   const { t, i18n } = useTranslation();
   const dispatch = useDispatch();
-
-  const [page, setPage] = useState(1);
-  const [translatedCategory, setTranslatedCategory] = useState(selectedCategory?.category);
+  const [page, setPage] = useState<number>(1);
+  const [translatedCategory, setTranslatedCategory] = useState<string>(selectedCategory?.category);
   const itemsPerPage = 8;
-  const [openView, setOpenView] = useState(selectedRecipe || false);
-  const [openAdd, setOpenAdd] = useState(addRecipe || false);
-  const [openFill, setOpenFill] = useState(false);
-  const [viewedItem, setViewedItem] = useState(selectedRecipe || null);
-  const [newRecipe, setNewRecipe] = useState({
+  const [openView, setOpenView] = useState<boolean>(!!selectedRecipe);
+  const [openAdd, setOpenAdd] = useState<boolean>(!!addRecipe);
+  const [openFill, setOpenFill] = useState<boolean>(false);
+  const [viewedItem, setViewedItem] = useState<Recipe | null>(selectedRecipe || null);
+  const [newRecipe, setNewRecipe] = useState<Recipe>({
     title: "",
     ingredients: "",
     preparation: "",
   });
-  const [editOrder, setEditOrder] = useState(false);
-  const [rowJustify, setRowJustify] = useState(
+  const [editOrder, setEditOrder] = useState<boolean>(false);
+  const [rowJustify, setRowJustify] = useState<string>(
     window.innerWidth <= 770
       ? "center"
       : (i18n.dir && i18n.dir() === "rtl")
@@ -82,16 +120,14 @@ export default function MainContent({ data, selectedCategory, selectedRecipe, ad
   );
 
   // Assume recipes are stored in selectedCategory.itemPage
-  const [recipes, setRecipes] = useState(selectedCategory?.itemPage || []);
+  const [recipes, setRecipes] = useState<Recipe[]>(selectedCategory?.itemPage || []);
   const navigate = useNavigate();
 
   useEffect(() => {
-    setOpenView(selectedRecipe)
+    setOpenView(!!selectedRecipe);
   }, [selectedRecipe]);
 
-
   useEffect(() => {
-    console.log("Selected category changed:", selectedCategory);
     setRecipes(selectedCategory?.itemPage || []);
   }, [selectedCategory]);
 
@@ -115,9 +151,9 @@ export default function MainContent({ data, selectedCategory, selectedRecipe, ad
         // Fallback: check object format (for backward compatibility)
         if (
           selectedCategory.translatedCategory &&
-          selectedCategory.translatedCategory[lang]
+          (selectedCategory.translatedCategory as any)[lang]
         ) {
-          setTranslatedCategory(selectedCategory.translatedCategory[lang]);
+          setTranslatedCategory((selectedCategory.translatedCategory as any)[lang]);
           return;
         }
         // If not, translate and show
@@ -135,7 +171,7 @@ export default function MainContent({ data, selectedCategory, selectedRecipe, ad
     useSensor(PointerSensor, { activationConstraint: { distance: 5 } })
   );
 
-  const handleRecipeDragEnd = (event) => {
+  const handleRecipeDragEnd = (event: any) => {
     const { active, over } = event;
     if (!over) return;
     if (active.id !== over.id) {
@@ -148,9 +184,8 @@ export default function MainContent({ data, selectedCategory, selectedRecipe, ad
     }
   };
 
-  const handleAddRecipe = async (recipe) => {
-    console.log("Adding recipe:", recipe);
-    let newRecipeData = {
+  const handleAddRecipe = async (recipe: Recipe) => {
+    let newRecipeData: Recipe = {
       title: recipe?.title,
       ingredients: recipe?.ingredients,
       preparation: recipe?.preparation,
@@ -178,14 +213,12 @@ export default function MainContent({ data, selectedCategory, selectedRecipe, ad
       }
     }
 
-    console.log("Adding recipe:", newRecipeData);
     try {
       const response = await dispatch(
         addRecipeThunk({ recipe: newRecipeData, category: selectedCategory })
       ).unwrap();
-      console.log("Recipe added:", response);
       setRecipes([...recipes, newRecipeData]);
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error adding recipe:", error.response?.data || error.message);
     }
 
@@ -195,25 +228,23 @@ export default function MainContent({ data, selectedCategory, selectedRecipe, ad
   };
 
   // New function: Update existing recipe
-  const handleUpdateRecipe = async (updatedRecipe) => {
-    updatedRecipe._id = viewedItem._id; // Ensure we have the correct ID
+  const handleUpdateRecipe = async (updatedRecipe: Recipe) => {
+    updatedRecipe._id = viewedItem?._id; // Ensure we have the correct ID
     updatedRecipe.categoryId = selectedCategory?._id; // Ensure we have the correct category ID
     updatedRecipe.category = selectedCategory?.category; // Ensure we have the correct category name
-    console.log("Updating recipe:", updatedRecipe);
     try {
       const response = await dispatch(updateRecipeThunk(updatedRecipe)).unwrap();
-      console.log("Recipe updated:", response);
       setRecipes((prevRecipes) =>
         prevRecipes.map((r) => (r._id === updatedRecipe._id ? updatedRecipe : r))
       );
       setOpenView(false);
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error updating recipe:", error.response?.data || error.message);
     }
   };
 
   // Function to delete a recipe using Redux and update local state
-  const handleDeleteRecipe = (recipe) => {
+  const handleDeleteRecipe = (recipe: Recipe) => {
     if (window.confirm(t("Are you sure you want to delete this recipe? ID:" + recipe._id + " " + recipe.title))) {
       dispatch(delRecipeThunk(recipe._id))
         .unwrap()
@@ -222,7 +253,7 @@ export default function MainContent({ data, selectedCategory, selectedRecipe, ad
             prevRecipes.filter((r) => r._id !== recipe._id)
           );
         })
-        .catch((err) => {
+        .catch((err: any) => {
           console.error("Error deleting recipe:", err);
         });
     }
@@ -234,21 +265,19 @@ export default function MainContent({ data, selectedCategory, selectedRecipe, ad
   const endIndex = Math.min(startIndex + itemsPerPage, totalItems);
   const currentItems = recipes.slice(startIndex, endIndex);
 
-  const handlePageChange = (event, value) => {
+  const handlePageChange = (event: React.ChangeEvent<unknown>, value: number) => {
     setPage(value);
   };
 
-const handleSelectRecipe = (recipe) => {
-  console.log("Selected recipe:", recipe);
-  setViewedItem(recipe);
-  setOpenView(true);
-  if (recipe && selectedCategory?.category && recipe?.title) {
-    const categoryEncoded = encodeURIComponent(selectedCategory?.category);
-    const titleEncoded = encodeURIComponent(recipe?.title);
-    navigate(`/recipes/${categoryEncoded}/${titleEncoded}`);
-    console.log("Navigating to:", `/recipes/${categoryEncoded}/${titleEncoded}`);
-  }
-};
+  const handleSelectRecipe = (recipe: Recipe) => {
+    setViewedItem(recipe);
+    setOpenView(true);
+    if (recipe && selectedCategory?.category && recipe?.title) {
+      const categoryEncoded = encodeURIComponent(selectedCategory?.category);
+      const titleEncoded = encodeURIComponent(recipe?.title);
+      navigate(`/recipes/${categoryEncoded}/${titleEncoded}`);
+    }
+  };
 
   useEffect(() => {
     const handleResize = () => {
@@ -266,7 +295,6 @@ const handleSelectRecipe = (recipe) => {
     return () => window.removeEventListener("resize", handleResize);
   }, [i18n.language]);
 
-  // Add this function inside MainContent, above the return:
   const handleCloseDialog = () => {
     setOpenView(false);
     setOpenAdd(false);
@@ -285,7 +313,7 @@ const handleSelectRecipe = (recipe) => {
           flexWrap: "wrap",
           alignItems: "center",
           gap: "1rem",
-          textAlign: "center", // <-- Add this line to center content horizontally
+          textAlign: "center",
         }}
       >
         <div
@@ -338,7 +366,7 @@ const handleSelectRecipe = (recipe) => {
               fontWeight: "bold",
               fontSize: "0.85rem",
               gap: "0.25rem",
-              backgroundColor: "darkgreen", // <-- dark green background
+              backgroundColor: "darkgreen",
               "&:hover": {
                 backgroundColor: "#145214",
               },
@@ -391,28 +419,28 @@ const handleSelectRecipe = (recipe) => {
             color="primary"
             sx={{
               "& .MuiPaginationItem-root": {
-                color: (theme) => theme.mode === "dark" ? "white" : "inherit",
+                color: (theme) => (isDarkMode ? "white" : "inherit"),
                 direction: i18n.dir && i18n.dir() === "rtl" ? "ltr" : "ltr",
               },
               "& .Mui-selected": {
-                backgroundColor: isDarkMode ? "#fff" : "", // White background for selected page on dark mode
-                color: isDarkMode ? "#222" : "",           // Dark text for contrast
+                backgroundColor: isDarkMode ? "#fff" : "",
+                color: isDarkMode ? "#222" : "",
               },
             }}
-            dir={i18n.dir && i18n.dir() === "rtl" ? "ltr" : "ltr"} // For MUI v5+
+            dir={i18n.dir && i18n.dir() === "rtl" ? "ltr" : "ltr"}
           />
         </div>
       )}
       {editOrder ? (
         <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleRecipeDragEnd}>
-          <SortableContext items={recipes.map((r) => r._id)} strategy={verticalListSortingStrategy}>
+          <SortableContext items={recipes.map((r) => r._id!)} strategy={verticalListSortingStrategy}>
             {recipes.map((recipe, index) => (
               <SortableRecipe key={recipe._id} recipe={recipe} index={index} onSelect={handleSelectRecipe} />
             ))}
           </SortableContext>
         </DndContext>
       ) : ( window.innerWidth && (
-                <div
+        <div
           className="row d-flex"
           style={{
             justifyContent: rowJustify,
@@ -420,7 +448,6 @@ const handleSelectRecipe = (recipe) => {
         >
           {currentItems.map((item, index) => {
             let colClass = "col-12 col-sm-8 col-md-6 col-lg-3";
-            const isRTL = i18n.dir && i18n.dir() === "rtl";
             return (
               <div
                 key={index}
@@ -441,19 +468,17 @@ const handleSelectRecipe = (recipe) => {
           })}
         </div>
       )
-
       )}
       <RecipeDialog
         open={openView}
         onClose={handleCloseDialog}
         type="view"
         recipe={viewedItem}
-        onSave={(recipe) => {
+        onSave={(recipe: Recipe) => {
           // If editing an existing recipe, call update; otherwise, add new.
-          console.log("Saving recipe:", recipe, viewedItem?._id);
           viewedItem?._id ? handleUpdateRecipe(recipe) : handleAddRecipe(recipe);
         }}
-        onDelete={(recipe) => {
+        onDelete={(recipe: Recipe) => {
           handleDeleteRecipe(recipe);
         }}
         targetLang={i18n.language}
@@ -465,12 +490,13 @@ const handleSelectRecipe = (recipe) => {
         type="add"
         recipe={newRecipe}
         categoryName={selectedCategory?.category}
-        onSave={(recipe) => {
-          console.log("Saving recipe:", recipe, viewedItem?._id);
+        onSave={(recipe: Recipe) => {
           handleAddRecipe(recipe);
         }}
         targetLang={i18n.language}
       />
     </div>
   );
-}
+};
+
+export default MainContent;
