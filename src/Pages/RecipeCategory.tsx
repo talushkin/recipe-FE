@@ -16,11 +16,11 @@ export default function RecipeCategory(props: RecipeCategoryProps) {
   const { selectedRecipe, newRecipe, recipes, setRecipes, selectedCategory, setSelectedCategory } = props;
   const { category, title } = useParams<{ category?: string; title?: string }>();
   console.log('trying to find category:', useParams());
-  const pages = recipes?.site?.pages || [];
+  const categories = recipes?.site?.categories || [];
 
   // Normalize category (lowercase) for comparison
-  const selectedCategoryData = pages.find(
-    (page: any) => page?.category?.toLowerCase() === category?.toLowerCase()
+  const selectedCategoryData = categories.find(
+    (cat: any) => cat?.category?.toLowerCase() === category?.toLowerCase()
   );
 
   if (!selectedCategoryData) {

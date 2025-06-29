@@ -15,11 +15,11 @@ export default function RecipeDetail(props: RecipeDetailProps) {
   const { selectedRecipe, newRecipe, recipes, setRecipes, setSelectedCategory, selectedCategory } = props;
   const { category, title } = useParams();
   console.log('RecipeDetail params:', useParams());
-  const pages = recipes?.site?.pages || [];
+  const categories = recipes?.site?.categories || [];
 
   // Normalize category (lowercase) for comparison
-  const selectedCategoryData = pages.find(
-    (page) => page?.category?.toLowerCase() === category?.toLowerCase()
+  const selectedCategoryData = categories.find(
+    (cat) => cat?.category?.toLowerCase() === category?.toLowerCase()
   );
 
   const selectedRecipeData = selectedCategoryData.itemPage.find(

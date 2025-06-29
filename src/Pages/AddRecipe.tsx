@@ -14,11 +14,11 @@ export default function AddRecipe(props: AddRecipeProps) {
   const { recipes, setRecipes, selected, setSelected } = props;
   const { category, title } = useParams<{ category?: string; title?: string }>();
   console.log(useParams());
-  const pages = data?.site?.pages || [];
+  const categories = data?.site?.categories || [];
 
   // Normalize category (lowercase) for comparison
-  const selectedCategoryData = pages.find(
-    (page: any) => page?.category?.toLowerCase() === category?.toLowerCase()
+  const selectedCategoryData = categories.find(
+    (cat: any) => cat?.category?.toLowerCase() === category?.toLowerCase()
   );
 
   if (selectedCategoryData) {

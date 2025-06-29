@@ -5,7 +5,6 @@ import { translateDirectly } from "./translateAI";
 import { useDispatch } from "react-redux";
 import { addCategoryThunk, reorderCategoriesThunk, delCategoryThunk } from "../store/dataSlice";
 import { Button } from "@mui/material";
-
 import {
   DndContext,
   closestCenter,
@@ -21,22 +20,14 @@ import {
 } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import i18n from "../i18n";
+import type { Category } from "../utils/storage";
 
 const isRTL = i18n.dir() === "rtl";
 
-interface CategoryItem {
-  _id: string;
-  category: string;
-  createdAt?: string;
-  itemPage?: any[];
-  priority?: number;
-  translatedCategory?: { [lang: string]: string } | Array<{ lang: string; value: string; _id?: string }>;
-}
-
 interface SortableItemProps {
-  item: CategoryItem;
+  item: Category;
   index: number;
-  onSelect: (item: CategoryItem) => void;
+  onSelect: (item: Category) => void;
   editCategories: boolean;
   translatedCategory: string;
   delCategoryCallback: (id: string) => void;
@@ -127,15 +118,15 @@ function SortableItem({
 }
 
 interface NavItemListProps {
-  pages: CategoryItem[];
-  onSelect: (item: CategoryItem) => void;
+  categories: Category[];
+  onSelect: (item: Category) => void;
   editCategories: boolean;
-  onOrderChange?: (items: CategoryItem[]) => void;
+  onOrderChange?: (items: Category[]) => void;
   setReorder: (val: boolean) => void;
 }
 
 export default function NavItemList({
-  pages = [],
+  categories = [],
   onSelect,
   editCategories,
   onOrderChange,
@@ -144,35 +135,22 @@ export default function NavItemList({
   const { t, i18n } = useTranslation();
   const dispatch = useDispatch();
 
-  // Initialize items with a unique _id and default priority 
-  const initializeItems = () =>
-    pages.map((item, index) => ({
-      ...item,
-      _id: item._id || Date.now() + Math.random(),
-      priority: item.priority !== undefined ? item.priority : index + 1,
-    }));
-
-  const getTranslatedCategory = (item, lang) => {
-    if (!item.translatedCategory) return null;
-    return item.translatedCategory[lang] || null;
-  };
-
-  const [items, setItems] = useState(initializeItems());
+  const [items, setItems] = useState<Category[]>(categories);
   const [inputValue, setInputValue] = useState("");
   const [newCat, setNewCat] = useState(false);
 
-  // Sync items with pages when pages change
+  // Sync items with categories when categories change
   useEffect(() => {
-    setItems(initializeItems());
-  }, [pages]);
+    setItems(categories);
+  }, [categories]);
 
   // Translate category names and cache them per language
   useEffect(() => {
     const translateCategories = async () => {
-      if (pages.length === 0) return;
+      if (categories.length === 0) return;
       const lang = i18n.language;
       const newItems = await Promise.all(
-        pages.map(async (item) => {
+        categories.map(async (item) => {
           // If translatedCategory is an array, look for the lang object
           if (Array.isArray(item.translatedCategory)) {
             const found = item.translatedCategory.find(
@@ -204,7 +182,7 @@ export default function NavItemList({
         })
       );
       setItems(
-        initializeItems().map((item, idx) => ({
+        categories.map((item, idx) => ({
           ...item,
           translatedCategory: newItems[idx].translatedCategory,
         }))
@@ -212,7 +190,7 @@ export default function NavItemList({
     };
     translateCategories();
     // eslint-disable-next-line
-  }, [pages, i18n.language]);
+  }, [categories, i18n.language]);
 
   const handleAddItem = async () => {
     setNewCat(false);
@@ -230,7 +208,6 @@ export default function NavItemList({
       category: englishCategory,
       createdAt: dayjs().format("DD-MM-YYYY"),
       itemPage: [],
-      priority: items.length + 1,
     };
     dispatch(addCategoryThunk(englishCategory));
     setItems([...items, newItem]);

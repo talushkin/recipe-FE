@@ -42,10 +42,10 @@ function App() {
       const categoryParam = params.category;
       const titleParam = params.title;
 
-      if (data?.site?.pages && data.site.pages.length > 0) {
-        let initialCategory = data.site.pages[0];
+      if (data?.site?.categories && data.site.categories.length > 0) {
+        let initialCategory = data.site.categories[0];
         if (categoryParam) {
-          const foundCat = data.site.pages.find(
+          const foundCat = data.site.categories.find(
             (cat: any) => encodeURIComponent(cat.category) === categoryParam
           );
           if (foundCat) initialCategory = foundCat;

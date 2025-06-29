@@ -29,7 +29,7 @@ export interface Category {
 
 export interface SiteData {
   header: { logo: string };
-  pages: Category[];
+  categories: Category[]; // changed from pages to categories
 }
 
 export interface SiteResponse {
@@ -39,7 +39,7 @@ export interface SiteResponse {
 }
 
 // Load categories and recipes from the server
-export const loadData = async (loadFromMemory = false): Promise<SiteResponse | { site: { pages: Category[] } }> => {
+export const loadData = async (loadFromMemory = false): Promise<SiteResponse | { site: { categories: Category[] } }> => {
   try {
     if (loadFromMemory) {
       const cached = localStorage.getItem("recipeSiteData");
@@ -62,7 +62,7 @@ export const loadData = async (loadFromMemory = false): Promise<SiteResponse | {
         header: {
           logo: "https://vt-photos.s3.amazonaws.com/recipe-app-icon-generated-image.png"
         },
-        pages: categoriesRes.data.map((cat: any) => ({
+        categories: categoriesRes.data.map((cat: any) => ({
           category: cat.category || "unknown category",
           translatedCategory: cat.translatedCategory || [],
           _id: cat._id,
@@ -84,7 +84,7 @@ export const loadData = async (loadFromMemory = false): Promise<SiteResponse | {
     return site;
   } catch (err: any) {
     console.error("Error loading data from API:", err);
-    return { site: { pages: [] } };
+    return { site: { categories: [] } };
   }
 };
 

@@ -23,10 +23,10 @@ interface HomePageProps {
 
 export default function Main(props: HomePageProps) {
   const { setSelectedRecipe, selectedRecipe, newRecipe, recipes, setRecipes, selectedCategory, setSelectedCategory } = props;
-  const [menuOpen, setMenuOpen] = useState(false);
+  const [menuOpen, setMenuOpen] = useState<boolean>(false);
   const { i18n } = useTranslation();
-  const [isDarkMode, setIsDarkMode] = useState(false);
-  const [desktop, setDesktop] = useState(window.innerWidth > 768); // Check if desktop
+  const [isDarkMode, setIsDarkMode] = useState<boolean>(false);
+  const [desktop, setDesktop] = useState<boolean>(window.innerWidth > 768); // Check if desktop
   const navigate = useNavigate();
 
   // Add toggleDarkMode function
@@ -70,7 +70,7 @@ export default function Main(props: HomePageProps) {
             desktop={desktop}
             logo={"https://vt-photos.s3.amazonaws.com/recipe-app-icon-generated-image.png"}
             onHamburgerClick={handleHamburgerClick}
-            pages={recipes?.site?.pages}
+            categories={recipes?.site?.categories}
             isDarkMode={isDarkMode}
             data={recipes}
             toggleDarkMode={toggleDarkMode}
@@ -90,7 +90,7 @@ export default function Main(props: HomePageProps) {
               <NavMenu
                 isDarkMode={isDarkMode}
                 toggleDarkMode={toggleDarkMode}
-                pages={recipes?.site?.pages}
+                categories={recipes?.site?.categories}
                 isOpen={menuOpen || desktop}
                 onSelect={setSelectedCategory}
                 editCategories={false}

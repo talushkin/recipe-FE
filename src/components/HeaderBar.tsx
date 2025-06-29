@@ -11,11 +11,14 @@ import { useNavigate } from "react-router-dom"; // <-- Add this line
 export default function HeaderBar({
   logo,
   onHamburgerClick,
-  pages,
+  categories,
   desktop,
   setSelectedCategory, // <-- Add prop for setting selected category
   setSelectedRecipe,
   selectedRecipe, // <-- Add prop for selected recipe
+  setRecipes, // <-- Add prop for setting recipes
+  newRecipe, // <-- Add prop for new recipe 
+  isDarkMode, // <-- Add prop for dark mode
 
 }) {
   const navigate = useNavigate(); // <-- Add this line
@@ -42,7 +45,7 @@ export default function HeaderBar({
   const [translatedOptions, setTranslatedOptions] = useState([]);
 
   // Build allRecipes as before
-  const allRecipes = pages?.flatMap((category) =>
+  const allRecipes = categories?.flatMap((category) =>
     category.itemPage.map((r) => ({ ...r, category: category.category }))
   );
 
