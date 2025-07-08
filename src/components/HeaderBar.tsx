@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { Autocomplete, TextField } from "@mui/material";
-import RecipeDialog from "./RecipeDialog";
+// import RecipeDialog from "./RecipeDialog"; // unused
 import cardboardTexture from "../assets/cardboard-texture.jpg";
 import SearchIcon from "@mui/icons-material/Search";
 import { useNavigate } from "react-router-dom";
@@ -35,13 +35,7 @@ export default function HeaderBar({
   const navigate = useNavigate();
   const { t, i18n } = useTranslation();
   const [searchQuery, setSearchQuery] = useState("");
-  const [filteredSuggestions, setFilteredSuggestions] = useState<{
-    title: string;
-    category: string;
-    originalTitle: string;
-  }[]>([]);
-  const [dialogOpen, setDialogOpen] = useState(false);
-  const [language] = useState(i18n.language);
+  // Removed unused: dialogOpen, language
   const [searchActive, setSearchActive] = useState(false);
   const [showMobileSearch, setShowMobileSearch] = useState(false);
   const searchInputRef = useRef<HTMLInputElement>(null);
@@ -64,19 +58,11 @@ export default function HeaderBar({
         originalTitle: r.title,
       }))
     );
-  }, [allRecipes, i18n.language]);
+  }, [allRecipes, i18n.language, setTranslatedOptions]);
 
   const handleSearchChange = (_event: any, value: string) => {
     setShowMobileSearch(false);
     setSearchQuery(value);
-    if (!value) {
-      setFilteredSuggestions([]);
-      return;
-    }
-    const filtered = translatedOptions.filter((opt) =>
-      opt.title?.toLowerCase().includes(value.toLowerCase())
-    );
-    setFilteredSuggestions(filtered);
   };
 
   const handleSelect = (_event: any, value: string | null) => {
@@ -84,11 +70,9 @@ export default function HeaderBar({
     if (option) {
       const recipe = allRecipes.find((r) => r.title === option.originalTitle);
       if (recipe) {
-        setDialogOpen(true);
         setSearchActive(false);
         setShowMobileSearch(false);
         setSearchQuery("");
-        setFilteredSuggestions([]);
         if (searchInputRef.current) {
           searchInputRef.current.blur();
         }
@@ -104,24 +88,13 @@ export default function HeaderBar({
     if (event.key === "Escape" && searchActive) {
       setSearchActive(false);
       setSearchQuery("");
-      setFilteredSuggestions([]);
       if (searchInputRef.current) {
         searchInputRef.current.blur();
       }
     }
   };
 
-  const fadeStyle = {
-    transition:
-      "opacity 0.4s cubic-bezier(.4,0,.2,1), width 0.4s cubic-bezier(.4,0,.2,1)",
-    opacity: searchActive ? 0 : 1,
-    width: searchActive ? 0 : "auto",
-    pointerEvents: searchActive ? ("none" as React.CSSProperties["pointerEvents"]) : ("auto" as React.CSSProperties["pointerEvents"]),
-    willChange: "opacity,width",
-    overflow: "hidden" as const,
-    minWidth: 0,
-    display: searchActive ? "none" : "flex",
-  };
+  // Removed unused: fadeStyle
 
   return (
     <>

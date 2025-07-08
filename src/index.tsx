@@ -24,6 +24,7 @@ import type { SiteData, Category, Recipe } from "./utils/storage";
 const rootElement = document.getElementById("root") as HTMLElement;
 const root = ReactDOM.createRoot(rootElement);
 
+
 function App() {
   const [recipes, setRecipes] = useState<SiteData | null>(null);
   const [selectedRecipe, setSelectedRecipe] = useState<Recipe | null>(null);
@@ -33,16 +34,17 @@ function App() {
   const navigate = useNavigate();
   const params = useParams();
 
+  // Extract params for useEffect dependency
+  const categoryParam = params.category;
+  const titleParam = params.title;
   useEffect(() => {
+    let isMounted = true;
     const fetchData = async () => {
       setLoading(true);
       const data = await storage.loadData(false);
-      // Extract site from SiteResponse or fallback
       const siteData = (data as any).site ? (data as any).site : data;
+      if (!isMounted) return;
       setRecipes(siteData);
-
-      const categoryParam = params.category;
-      const titleParam = params.title;
 
       if (siteData?.categories && siteData.categories.length > 0) {
         let initialCategory = siteData.categories[0];
@@ -64,12 +66,15 @@ function App() {
       setLoading(false);
     };
     fetchData();
-  }, [params.category, params.title]);
+    return () => {
+      isMounted = false;
+    };
+  }, [categoryParam, titleParam]);
 
   useEffect(() => {
     document.body.dir =
       i18n.language === "he" || i18n.language === "ar" ? "rtl" : "ltr";
-  }, [i18n.language]);
+  }, []);
 
   useEffect(() => {
     if (selectedRecipe && selectedRecipe.title && selectedRecipe.category) {
@@ -106,7 +111,7 @@ function App() {
             element={
               <HomePage
                 recipes={recipes}
-                setRecipes={setRecipes as (recipes: SiteData) => void}
+                setRecipes={setRecipes}
                 selectedRecipe={selectedRecipe}
                 setSelectedRecipe={setSelectedRecipe}
                 setSelectedCategory={setSelectedCategory}
@@ -120,12 +125,9 @@ function App() {
             element={
               <RecipeCategory
                 recipes={recipes}
-                setRecipes={setRecipes as (recipes: SiteData) => void}
-                selectedRecipe={selectedRecipe}
+                setRecipes={setRecipes}
                 setSelectedRecipe={setSelectedRecipe}
                 setSelectedCategory={setSelectedCategory}
-                selectedCategory={selectedCategory}
-                newRecipe={null}
               />
             }
           />
@@ -134,10 +136,8 @@ function App() {
             element={
               <RecipeDetail
                 recipes={recipes}
-                setRecipes={setRecipes as (recipes: SiteData) => void}
+                setRecipes={setRecipes}
                 setSelectedCategory={setSelectedCategory}
-                selectedCategory={selectedCategory}
-                selectedRecipe={selectedRecipe}
                 setSelectedRecipe={setSelectedRecipe}
               />
             }
@@ -147,7 +147,7 @@ function App() {
             element={
               <AddRecipe
                 recipes={recipes}
-                setRecipes={setRecipes as (recipes: SiteData) => void}
+                setRecipes={setRecipes}
                 setSelectedCategory={setSelectedCategory}
                 selectedCategory={selectedCategory}
                 selectedRecipe={selectedRecipe}

@@ -7,7 +7,7 @@ import { useTranslation } from "react-i18next";
 import { ThemeProvider } from "styled-components";
 import { lightTheme, darkTheme } from "../components/themes";
 import GlobalStyle from "../components/GlobalStyle";
-import { useNavigate } from "react-router-dom";
+// import { useNavigate } from "react-router-dom"; // unused
 import FooterBar from "../components/FooterBar";
 import type { Category, Recipe, SiteData } from "../utils/storage";
 import type { i18n as I18nType } from "i18next";
@@ -23,12 +23,11 @@ interface HomePageProps {
 }
 
 export default function Main(props: HomePageProps) {
-  const { setSelectedRecipe, selectedRecipe, newRecipe, recipes, setRecipes, selectedCategory, setSelectedCategory } = props;
+  const { setSelectedRecipe, selectedRecipe, newRecipe, recipes, selectedCategory, setSelectedCategory } = props;
   const [menuOpen, setMenuOpen] = useState<boolean>(false);
   const { i18n } = useTranslation() as { i18n: I18nType };
   const [isDarkMode, setIsDarkMode] = useState<boolean>(false);
   const [desktop, setDesktop] = useState<boolean>(typeof window !== 'undefined' ? window.innerWidth > 768 : true);
-  const navigate = useNavigate();
 
   const toggleDarkMode = (): void => {
     setIsDarkMode((prev) => !prev);
@@ -52,7 +51,7 @@ export default function Main(props: HomePageProps) {
     handleResize();
     window.addEventListener("resize", handleResize);
     return () => window.removeEventListener("resize", handleResize);
-  }, []);
+  }, [setDesktop]);
 
   const isMobile = !desktop;
 

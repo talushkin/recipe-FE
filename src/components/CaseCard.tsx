@@ -38,14 +38,13 @@ export default function CaseCard({ item, category, index, isDarkMode }: CaseCard
       setTranslatedTitle(item.title);
     }
     return () => { isMounted = false; };
-  }, [item, currentLang]);
+  }, [item, currentLang, setTranslatedTitle]);
 
   useEffect(() => {
     setImageUrl(item.imageUrl || "https://placehold.co/100x100?text=No+Image");
   }, [item.imageUrl]);
 
-  const isNewRecipe = item.title === "ADD NEW RECEPY";
-  const linkHref = `/recipes/${encodeURIComponent(category)}/${encodeURIComponent(item.title)}`;
+  // Removed unused: isNewRecipe, linkHref
 
   return (
     <div

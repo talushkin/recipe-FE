@@ -13,7 +13,7 @@ interface AddRecipeProps {
 }
 
 export default function AddRecipe(props: AddRecipeProps) {
-  const { recipes, setRecipes, selectedCategory, setSelectedCategory, selectedRecipe, setSelectedRecipe } = props;
+  const { recipes, setRecipes, setSelectedCategory, selectedRecipe, setSelectedRecipe } = props;
   const { category } = useParams<{ category?: string }>();
   const categories = recipes.categories || [];
   const selectedCategoryData = categories.find(
@@ -21,7 +21,7 @@ export default function AddRecipe(props: AddRecipeProps) {
   ) || null;
   React.useEffect(() => {
     setSelectedCategory(selectedCategoryData);
-  }, [category]);
+  }, [category, setSelectedCategory, selectedCategoryData]);
   if (selectedCategoryData) {
     return (
       <HomePage

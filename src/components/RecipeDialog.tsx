@@ -63,15 +63,6 @@ const RecipeDialog = ({
     preparation: false,
   });
   const [showTranslated, setShowTranslated] = useState<boolean>(false);
-  const [translatedRecipe, setTranslatedRecipe] = useState<{
-    title: string;
-    ingredients: string;
-    preparation: string;
-  }>({
-    title: "",
-    ingredients: "",
-    preparation: "",
-  });
 
   useEffect(() => {
     // Reset to English when dialog opens or recipe changes
@@ -82,11 +73,6 @@ const RecipeDialog = ({
       preparation: recipe?.preparation || "",
       imageUrl: recipe?.imageUrl || "",
       _id: recipe?._id,
-    });
-    setTranslatedRecipe({
-      title: "",
-      ingredients: "",
-      preparation: "",
     });
   }, [recipe, open]);
 
@@ -106,7 +92,6 @@ const RecipeDialog = ({
     if (editableRecipe && autoFill) {
       handleFillAI();
     }
-    // eslint-disable-next-line
   }, [autoFill]);
 
   const handleChange = (field: keyof Recipe) => (
@@ -229,7 +214,6 @@ const RecipeDialog = ({
           translateDirectly(recipe.ingredients, targetLang),
           translateDirectly(recipe.preparation, targetLang),
         ]);
-        setTranslatedRecipe({ title, ingredients, preparation });
         setEditableRecipe((prev) => ({
           ...prev,
           title,

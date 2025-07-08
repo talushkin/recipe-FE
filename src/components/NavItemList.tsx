@@ -1,5 +1,4 @@
-import React, { useState, useEffect } from "react";
-import dayjs from "dayjs";
+import React, { useState, useEffect, useCallback } from "react";
 import { useTranslation } from "react-i18next";
 import { translateDirectly } from "./translateAI";
 import { useDispatch } from "react-redux";
@@ -90,13 +89,11 @@ function SortableItem({
           ☰
         </>
       )}
-      <a
-        href="#"
-        onClick={(e) => {
-          e.preventDefault();
-          onSelect(item);
-        }}
-        className="flex-1 flex items-center"
+      <button
+        type="button"
+        onClick={() => onSelect(item)}
+        className="flex-1 flex items-center nav-link-button"
+        style={{ background: "none", border: "none", padding: 0, cursor: "pointer" }}
       >
         {editCategories && index + 1 + ". "}
         <img
@@ -117,7 +114,7 @@ function SortableItem({
         >
           ({recipeCount})
         </span>
-      </a>
+      </button>
 
     </li>
   );
@@ -142,11 +139,11 @@ export default function NavItemList({
   const dispatch = useDispatch();
 
   // Convert incoming categories to CategoryWithPriority[]
-  const toCategoryWithPriority = (cat: Category, idx: number): CategoryWithPriority => ({
+  const toCategoryWithPriority = useCallback((cat: Category, idx: number): CategoryWithPriority => ({
     ...cat,
     priority: (cat as any).priority ?? idx + 1,
     translatedCategoryObj: {},
-  });
+  }), []);
   const [items, setItems] = useState<CategoryWithPriority[]>(categories.map(toCategoryWithPriority));
   const [inputValue, setInputValue] = useState<string>("");
   const [newCat, setNewCat] = useState<boolean>(false);
@@ -154,7 +151,7 @@ export default function NavItemList({
   // Sync items with categories when categories change
   useEffect(() => {
     setItems(categories.map(toCategoryWithPriority));
-  }, [categories]);
+  }, [categories, toCategoryWithPriority]);
 
   // Translate category names and cache them per language
   useEffect(() => {
@@ -176,8 +173,7 @@ export default function NavItemList({
       setItems(newItems);
     };
     translateCategories();
-    // eslint-disable-next-line
-  }, [categories, i18n.language]);
+  }, [categories, i18n.language, items, toCategoryWithPriority]);
 
   const handleAddItem = async () => {
     setNewCat(false);

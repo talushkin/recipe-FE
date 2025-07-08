@@ -4,17 +4,14 @@ import HomePage from "./HomePage";
 import type { Category, Recipe, SiteData } from "../utils/storage";
 
 interface RecipeCategoryProps {
-  selectedRecipe: Recipe | null;
-  newRecipe?: Recipe | null;
   recipes: SiteData;
   setRecipes: (recipes: SiteData) => void;
-  selectedCategory: Category | null;
   setSelectedCategory: (cat: Category | null) => void;
   setSelectedRecipe: (recipe: Recipe | null) => void;
 }
 
 export default function RecipeCategory(props: RecipeCategoryProps) {
-  const { selectedRecipe, newRecipe, recipes, setRecipes, selectedCategory, setSelectedCategory, setSelectedRecipe } = props;
+  const { recipes, setRecipes, setSelectedCategory, setSelectedRecipe } = props;
   const { category } = useParams<{ category?: string }>();
   const categories = recipes.categories || [];
   const selectedCategoryData = categories.find(
@@ -22,13 +19,13 @@ export default function RecipeCategory(props: RecipeCategoryProps) {
   ) || null;
   React.useEffect(() => {
     setSelectedCategory(selectedCategoryData);
-  }, [category]);
+  }, [category, setSelectedCategory, selectedCategoryData]);
   return <HomePage
     recipes={recipes}
     setRecipes={setRecipes}
     selectedCategory={selectedCategoryData}
     setSelectedCategory={setSelectedCategory}
-    selectedRecipe={selectedRecipe}
+    selectedRecipe={null}
     setSelectedRecipe={setSelectedRecipe}
     newRecipe={null}
   />;

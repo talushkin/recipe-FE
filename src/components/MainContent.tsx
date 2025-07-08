@@ -5,23 +5,9 @@ import Button from "@mui/material/Button";
 import RecipeDialog from "./RecipeDialog";
 import { useTranslation } from "react-i18next";
 import { translateDirectly } from "./translateAI";
-import { generateImage } from "./imageAI";
+// import { generateImage } from "./imageAI"; // unused
 import { useDispatch } from "react-redux";
 import { addRecipeThunk, delRecipeThunk, updateRecipeThunk } from "../store/dataSlice";
-import {
-  DndContext,
-  closestCenter,
-  PointerSensor,
-  useSensor,
-  useSensors,
-} from "@dnd-kit/core";
-import {
-  SortableContext,
-  verticalListSortingStrategy,
-  arrayMove,
-  useSortable,
-} from "@dnd-kit/sortable";
-import { CSS } from "@dnd-kit/utilities";
 import { useNavigate } from "react-router-dom";
 import AddIcon from "@mui/icons-material/Add";
 import SmartToyIcon from "@mui/icons-material/SmartToy";
@@ -37,39 +23,7 @@ interface MainContentProps {
   isDarkMode: boolean;
 }
 
-interface SortableRecipeProps {
-  recipe: Recipe;
-  index: number;
-  onSelect: (recipe: Recipe) => void;
-}
-
-function SortableRecipe({ recipe, index, onSelect }: SortableRecipeProps) {
-  const { attributes, listeners, setNodeRef, transform, transition } = useSortable({
-    id: recipe._id!,
-  });
-  const style: React.CSSProperties = {
-    transform: CSS.Transform.toString(transform),
-    transition,
-    marginBottom: "10px",
-    cursor: "grab",
-    display: "flex",
-    justifyContent: "center",
-    flexWrap: "wrap",
-    gap: "1rem",
-  };
-
-  return (
-    <div
-      ref={setNodeRef}
-      style={style}
-      {...attributes}
-      {...listeners}
-      onClick={() => onSelect(recipe)}
-    >
-      <CaseCard item={recipe} category={recipe.category || ""} index={index + 1} />
-    </div>
-  );
-}
+// Removed unused SortableRecipe component
 
 const MainContent: React.FC<MainContentProps> = ({
   selectedCategory,
@@ -92,7 +46,8 @@ const MainContent: React.FC<MainContentProps> = ({
     ingredients: "",
     preparation: "",
   });
-  const [editOrder, setEditOrder] = useState<boolean>(false);
+  // Removed unused: setEditOrder
+  // Remove all usage of editOrder
   const [rowJustify, setRowJustify] = useState<string>(
     window.innerWidth <= 770
       ? "center"
@@ -106,45 +61,36 @@ const MainContent: React.FC<MainContentProps> = ({
   useEffect(() => {
     setOpenView(!!selectedRecipe);
     setViewedItem(selectedRecipe || { title: "", ingredients: "", preparation: "" });
-  }, [selectedRecipe]);
+  }, [selectedRecipe, setOpenView, setViewedItem]);
 
   useEffect(() => {
-    setRecipes(selectedCategory?.itemPage || []);
-    setTranslatedCategory(selectedCategory?.translatedCategory?.[0] || selectedCategory?.category);
-  }, [selectedCategory]);
+    const itemPage = selectedCategory?.itemPage || [];
+    const translated = selectedCategory?.translatedCategory?.[0] || selectedCategory?.category;
+    setRecipes(itemPage);
+    setTranslatedCategory(translated);
+  }, [selectedCategory, setRecipes, setTranslatedCategory]);
 
   // Translate category name
   useEffect(() => {
+    const category = selectedCategory?.category;
+    const translatedArr = selectedCategory?.translatedCategory;
+    const lang = i18n.language;
     const translateCategory = async () => {
-      const lang = i18n.language;
-      if (selectedCategory?.category && lang !== "en") {
-        if (Array.isArray(selectedCategory.translatedCategory) && selectedCategory.translatedCategory.length > 0) {
-          setTranslatedCategory(selectedCategory.translatedCategory[0]);
+      if (category && lang !== "en") {
+        if (Array.isArray(translatedArr) && translatedArr.length > 0) {
+          setTranslatedCategory(translatedArr[0]);
           return;
         }
-        const translated = await translateDirectly(selectedCategory.category, lang);
+        const translated = await translateDirectly(category, lang);
         setTranslatedCategory(translated);
       } else {
-        setTranslatedCategory(selectedCategory?.category);
+        setTranslatedCategory(category);
       }
     };
     translateCategory();
-  }, [selectedCategory?.category, selectedCategory?.translatedCategory, i18n.language]);
+  }, [selectedCategory, i18n, setTranslatedCategory]);
 
-  const sensors = useSensors(
-    useSensor(PointerSensor, { activationConstraint: { distance: 5 } })
-  );
-
-  const handleRecipeDragEnd = (event: any) => {
-    const { active, over } = event;
-    if (!over) return;
-    if (active.id !== over.id) {
-      const oldIndex = recipes.findIndex((r) => r._id === active.id);
-      const newIndex = recipes.findIndex((r) => r._id === over.id);
-      const newRecipes = arrayMove(recipes, oldIndex, newIndex);
-      setRecipes(newRecipes);
-    }
-  };
+// Removed unused sensors and handleRecipeDragEnd
 
   const handleAddRecipe = async (recipe: Recipe) => {
     let newRecipeData: Recipe = {
@@ -245,7 +191,7 @@ const MainContent: React.FC<MainContentProps> = ({
     window.addEventListener("resize", handleResize);
     handleResize();
     return () => window.removeEventListener("resize", handleResize);
-  }, [i18n.language]);
+  }, [i18n]);
 
   const handleCloseDialog = () => {
     setOpenView(false);
@@ -255,143 +201,133 @@ const MainContent: React.FC<MainContentProps> = ({
       navigate(`/recipes/${categoryEncoded}`);
     }
   };
-
   return (
     <div className="main">
-      <div
-        className="main-title"
-        style={{
-          display: "flex",
-          flexWrap: "wrap",
-          alignItems: "center",
-          gap: "1rem",
-          textAlign: "center",
-        }}
-      >
+      <>
         <div
-          style={{
-            flexBasis: "100%",
-            textAlign: "center",
-            color: isDarkMode ? "white" : "inherit",
-            fontSize:
-              translatedCategory && translatedCategory.length > 24
-                ? "1.2rem"
-                : "2rem",
-            whiteSpace: "nowrap",
-            overflow: "hidden",
-            textOverflow: "ellipsis",
-            maxWidth: "100vw",
-            lineHeight: translatedCategory && translatedCategory.length > 24
-                ? "1.2rem"
-                : "2rem",
-                marginTop: "1rem",
-          }}
-          title={translatedCategory}
-        >
-          {translatedCategory}
-        </div>
-
-        <div
+          className="main-title"
           style={{
             display: "flex",
+            flexWrap: "wrap",
+            alignItems: "center",
             gap: "1rem",
-            justifyContent: "center",
-            width: "100%",
-            maxWidth: "800px",
-            margin: "0 auto"
+            textAlign: "center",
           }}
         >
-          <Button
-            variant="contained"
-            color="primary"
-            onClick={() => setOpenAdd(true)}
-            sx={{
-              minWidth: "56px",
-              minHeight: "56px",
-              width: "56px",
-              height: "56px",
-              borderRadius: "16px",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              p: 0,
-              fontWeight: "bold",
-              fontSize: "0.85rem",
-              gap: "0.25rem",
-              backgroundColor: "darkgreen",
-              "&:hover": {
-                backgroundColor: "#145214",
-              },
+          <div
+            style={{
+              flexBasis: "100%",
+              textAlign: "center",
+              color: isDarkMode ? "white" : "inherit",
+              fontSize:
+                translatedCategory && translatedCategory.length > 24
+                  ? "1.2rem"
+                  : "2rem",
+              whiteSpace: "nowrap",
+              overflow: "hidden",
+              textOverflow: "ellipsis",
+              maxWidth: "100vw",
+              lineHeight: translatedCategory && translatedCategory.length > 24
+                  ? "1.2rem"
+                  : "2rem",
+                  marginTop: "1rem",
             }}
-            title={t("addRecipe")}
+            title={translatedCategory}
           >
-            <AddIcon sx={{ fontSize: 28 }} />
-          </Button>
-          <Button
-            variant="contained"
-            color="secondary"
-            onClick={() => {
-              setOpenFill(true);
-              setOpenAdd(true);
-            }}
-            sx={{
-              minWidth: "56px",
-              minHeight: "56px",
-              width: "56px",
-              height: "56px",
-              borderRadius: "16px",
+            {translatedCategory}
+          </div>
+          <div
+            style={{
               display: "flex",
-              alignItems: "center",
+              gap: "1rem",
               justifyContent: "center",
-              p: 0,
-              fontWeight: "bold",
-              fontSize: "0.85rem",
-              gap: "0.25rem",
-              backgroundColor: "darkgreen",
-              "&:hover": {
-                backgroundColor: "#145214",
-              },
+              width: "100%",
+              maxWidth: "800px",
+              margin: "0 auto"
             }}
-            title={`AI ${t("addRecipe")}`}
           >
-            <AddIcon sx={{ fontSize: 20, mr: 0.5 }} />
-            <SmartToyIcon sx={{ fontSize: 24 }} />
-          </Button>
+            <Button
+              variant="contained"
+              color="primary"
+              onClick={() => setOpenAdd(true)}
+              sx={{
+                minWidth: "56px",
+                minHeight: "56px",
+                width: "56px",
+                height: "56px",
+                borderRadius: "16px",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                p: 0,
+                fontWeight: "bold",
+                fontSize: "0.85rem",
+                gap: "0.25rem",
+                backgroundColor: "darkgreen",
+                "&:hover": {
+                  backgroundColor: "#145214",
+                },
+              }}
+              title={t("addRecipe")}
+            >
+              <AddIcon sx={{ fontSize: 28 }} />
+            </Button>
+            <Button
+              variant="contained"
+              color="secondary"
+              onClick={() => {
+                setOpenFill(true);
+                setOpenAdd(true);
+              }}
+              sx={{
+                minWidth: "56px",
+                minHeight: "56px",
+                width: "56px",
+                height: "56px",
+                borderRadius: "16px",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                p: 0,
+                fontWeight: "bold",
+                fontSize: "0.85rem",
+                gap: "0.25rem",
+                backgroundColor: "darkgreen",
+                "&:hover": {
+                  backgroundColor: "#145214",
+                },
+              }}
+              title={`AI ${t("addRecipe")}`}
+            >
+              <AddIcon sx={{ fontSize: 20, mr: 0.5 }} />
+              <SmartToyIcon sx={{ fontSize: 24 }} />
+            </Button>
+          </div>
         </div>
-      </div>
-      <p style={{ flexBasis: "100%", textAlign: "center" }}>
-        {t("page")} {page}, {t("recipes")} {startIndex + 1}–{endIndex} {t("of")} {totalItems}
-      </p>
-      {totalPages > 1 && (
-        <div className="pagination-container" style={{ direction: i18n.dir && i18n.dir() === "rtl" ? "rtl" : "ltr" }}>
-          <Pagination
-            count={totalPages}
-            page={page}
-            onChange={handlePageChange}
-            color="primary"
-            sx={{
-              "& .MuiPaginationItem-root": {
-                color: (theme) => (isDarkMode ? "white" : "inherit"),
-                direction: i18n.dir && i18n.dir() === "rtl" ? "ltr" : "ltr",
-              },
-              "& .Mui-selected": {
-                backgroundColor: isDarkMode ? "#fff" : "",
-                color: isDarkMode ? "#222" : "",
-              },
-            }}
-            dir={i18n.dir && i18n.dir() === "rtl" ? "ltr" : "ltr"}
-          />
-        </div>
-      )}
-      {editOrder ? (
-        <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleRecipeDragEnd}>
-          <SortableContext items={recipes.map((r) => r._id!)} strategy={verticalListSortingStrategy}>
-            {recipes.map((recipe, index) => (
-              <SortableRecipe key={recipe._id} recipe={recipe} index={index} onSelect={handleSelectRecipe} />
-            ))}
-          </SortableContext>
-        </DndContext>
-      ) : ( window.innerWidth && (
+        <p style={{ flexBasis: "100%", textAlign: "center" }}>
+          {t("page")} {page}, {t("recipes")} {startIndex + 1}–{endIndex} {t("of")} {totalItems}
+        </p>
+        {totalPages > 1 && (
+          <div className="pagination-container" style={{ direction: i18n.dir && i18n.dir() === "rtl" ? "rtl" : "ltr" }}>
+            <Pagination
+              count={totalPages}
+              page={page}
+              onChange={handlePageChange}
+              color="primary"
+              sx={{
+                "& .MuiPaginationItem-root": {
+                  color: (theme) => (isDarkMode ? "white" : "inherit"),
+                  direction: i18n.dir && i18n.dir() === "rtl" ? "ltr" : "ltr",
+                },
+                "& .Mui-selected": {
+                  backgroundColor: isDarkMode ? "#fff" : "",
+                  color: isDarkMode ? "#222" : "",
+                },
+              }}
+              dir={i18n.dir && i18n.dir() === "rtl" ? "ltr" : "ltr"}
+            />
+          </div>
+        )}
         <div
           className="row d-flex"
           style={{
@@ -419,33 +355,33 @@ const MainContent: React.FC<MainContentProps> = ({
             );
           })}
         </div>
-      )
-      )}
-      <RecipeDialog
-        open={openView}
-        onClose={handleCloseDialog}
-        type="view"
-        recipe={viewedItem}
-        onSave={(recipe: Recipe) => {
-          viewedItem?._id ? handleUpdateRecipe(recipe) : handleAddRecipe(recipe);
-        }}
-        onDelete={(recipe: Recipe) => {
-          handleDeleteRecipe(recipe);
-        }}
-        targetLang={i18n.language}
-      />
-      <RecipeDialog
-        open={openAdd}
-        autoFill={openFill}
-        onClose={handleCloseDialog}
-        type="add"
-        recipe={newRecipe}
-        categoryName={selectedCategory?.category}
-        onSave={(recipe: Recipe) => {
-          handleAddRecipe(recipe);
-        }}
-        targetLang={i18n.language}
-      />
+        <RecipeDialog
+          open={openView}
+          onClose={handleCloseDialog}
+          type="view"
+          recipe={viewedItem}
+          onSave={(recipe: Recipe) => {
+            viewedItem?._id ? handleUpdateRecipe(recipe) : handleAddRecipe(recipe);
+          }}
+          onDelete={(recipe: Recipe) => {
+            handleDeleteRecipe(recipe);
+          }}
+
+          targetLang={i18n.language}
+        />
+        <RecipeDialog
+          open={openAdd}
+          autoFill={openFill}
+          onClose={handleCloseDialog}
+          type="add"
+          recipe={newRecipe}
+          categoryName={selectedCategory?.category}
+          onSave={(recipe: Recipe) => {
+            handleAddRecipe(recipe);
+          }}
+          targetLang={i18n.language}
+        />
+      </>
     </div>
   );
 };
