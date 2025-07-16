@@ -133,7 +133,7 @@ export default function HeaderBar({
             </button>
           )}
           <img
-            src={logo || "https://vt-photos.s3.amazonaws.com/recipe-app-icon-generated-image.png"}
+            src={"https://vt-photos.s3.amazonaws.com/recipe-app-icon-generated-image.png"}
             alt="Logo"
             style={{
               width: "60px",
