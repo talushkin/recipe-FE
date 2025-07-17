@@ -3,26 +3,38 @@ import NavItemList from "./NavItemList";
 import { useTranslation } from "react-i18next";
 import { Button } from "@mui/material";
 import { useNavigate } from "react-router-dom";
-import ThemeModeButton from "./ThemeModeButton.jsx";
-import LanguageSelector from "./LanguageSelector.jsx";
+import ThemeModeButton from "./ThemeModeButton";
+import LanguageSelector from "./LanguageSelector";
+import type { Category, Categories } from "../utils/storage";
 
-export default function NavMenu({ pages, onSelect, isOpen, language, desktop, isDarkMode, toggleDarkMode, onHamburgerClick }) {
+interface NavMenuProps {
+  categories: Categories;
+  onSelect: (cat: Category | null) => void;
+  isOpen: boolean;
+  language: string;
+  desktop: boolean;
+  isDarkMode: boolean;
+  toggleDarkMode: () => void;
+  onHamburgerClick: () => void;
+}
+
+export default function NavMenu({ categories, onSelect, isOpen, language, desktop, isDarkMode, toggleDarkMode, onHamburgerClick }: NavMenuProps) {
   const { t, i18n } = useTranslation();
-  const [editCategories, setEditCategories] = useState(false);
-  const [reorder, setReorder] = useState(false);
-  const [orderedPages, setOrderedPages] = useState(pages);
+  const [editCategories, setEditCategories] = useState<boolean>(false);
+  const [reorder, setReorder] = useState<boolean>(false);
+  const [orderedCategories, setOrderedCategories] = useState<Categories>(categories);
 
   const navigate = useNavigate();
 
   useEffect(() => {
-    setOrderedPages(pages);
-  }, [pages]);
+    setOrderedCategories(categories);
+  }, [categories]);
 
-  const handleOrderChange = (newOrder) => {
-    setOrderedPages(newOrder);
+  const handleOrderChange = (newOrder: Category[]) => {
+    setOrderedCategories(newOrder);
   };
 
-  const handleSelectCategory = (item) => {
+  const handleSelectCategory = (item: Category) => {
     setEditCategories(false);
     setReorder(false);
 
@@ -30,12 +42,13 @@ export default function NavMenu({ pages, onSelect, isOpen, language, desktop, is
       const categoryEncoded = encodeURIComponent(item.category);
       navigate(`/recipes/${categoryEncoded}`);
     }
-      onHamburgerClick(); // Call the parent function to handle hamburger click
-      onSelect(item);
+    onHamburgerClick();
+    onSelect(item);
     console.log("Selected category:", item);
   };
 
-  const handleLanguageChange = (event) => {
+  // Use correct event type for LanguageSelector (SelectChangeEvent<string>)
+  const handleLanguageChange = (event: { target: { value: string } }) => {
     const newLang = event.target.value;
     i18n.changeLanguage(newLang);
   };
@@ -44,7 +57,7 @@ export default function NavMenu({ pages, onSelect, isOpen, language, desktop, is
     <div className={`nav ${isOpen || reorder || desktop ? "show" : "hide"}`}>
       <NavItemList
         editCategories={editCategories}
-        pages={orderedPages}
+        categories={orderedCategories}
         onSelect={handleSelectCategory}
         onOrderChange={handleOrderChange}
         setReorder={setReorder}

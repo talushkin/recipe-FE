@@ -1,7 +1,8 @@
-// src/GlobalStyle.js
+// src/GlobalStyle.ts
 import { createGlobalStyle } from "styled-components";
+import type { AppTheme } from "./themes";
 
-const GlobalStyle = createGlobalStyle`
+const GlobalStyle = createGlobalStyle<{ theme: AppTheme }>`
   body {
     background-color: ${({ theme }) => theme.background};
     color: ${({ theme }) => theme.color};

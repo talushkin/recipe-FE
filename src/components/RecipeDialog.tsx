@@ -13,8 +13,21 @@ import {
 import { useTranslation } from "react-i18next";
 import { translateDirectly } from "./translateAI";
 import AutorenewIcon from "@mui/icons-material/Autorenew";
+import type { Recipe } from "../utils/storage";
 
 const BASE_URL = "https://be-tan-theta.vercel.app";
+
+interface RecipeDialogProps {
+  open: boolean;
+  onClose: () => void;
+  onSave: (recipe: Recipe) => void;
+  onDelete?: (recipe: Recipe) => void;
+  recipe: Recipe;
+  targetLang?: string;
+  type?: string;
+  categoryName?: string;
+  autoFill?: boolean;
+}
 
 const RecipeDialog = ({
   open,
@@ -26,31 +39,30 @@ const RecipeDialog = ({
   type,
   categoryName,
   autoFill = false,
-}) => {
+}: RecipeDialogProps) => {
   const { i18n, t } = useTranslation();
   const isRTL = i18n.language === "he" || i18n.language === "ar";
 
-  const [editableRecipe, setEditableRecipe] = useState({
+  const [editableRecipe, setEditableRecipe] = useState<Recipe>({
     title: recipe?.title || "",
     ingredients: recipe?.ingredients || "",
     preparation: recipe?.preparation || "",
     imageUrl: recipe?.imageUrl || "",
-    _id: recipe?._id || "",
+    _id: recipe?._id,
   });
 
-  const [isLoadingImage, setIsLoadingImage] = useState(false);
-  const [isFillingAI, setIsFillingAI] = useState(false);
-  const [isTranslating, setIsTranslating] = useState({
+  const [isLoadingImage, setIsLoadingImage] = useState<boolean>(false);
+  const [isFillingAI, setIsFillingAI] = useState<boolean>(false);
+  const [isTranslating, setIsTranslating] = useState<{
+    title: boolean;
+    ingredients: boolean;
+    preparation: boolean;
+  }>({
     title: false,
     ingredients: false,
     preparation: false,
   });
-  const [showTranslated, setShowTranslated] = useState(false);
-  const [translatedRecipe, setTranslatedRecipe] = useState({
-    title: "",
-    ingredients: "",
-    preparation: "",
-  });
+  const [showTranslated, setShowTranslated] = useState<boolean>(false);
 
   useEffect(() => {
     // Reset to English when dialog opens or recipe changes
@@ -60,12 +72,7 @@ const RecipeDialog = ({
       ingredients: recipe?.ingredients || "",
       preparation: recipe?.preparation || "",
       imageUrl: recipe?.imageUrl || "",
-      _id: recipe?._id || "",
-    });
-    setTranslatedRecipe({
-      title: "",
-      ingredients: "",
-      preparation: "",
+      _id: recipe?._id,
     });
   }, [recipe, open]);
 
@@ -76,6 +83,7 @@ const RecipeDialog = ({
         ingredients: recipe.ingredients || "",
         preparation: recipe.preparation || "",
         imageUrl: recipe.imageUrl || "",
+        _id: recipe._id,
       });
     }
   }, [recipe]);
@@ -86,32 +94,9 @@ const RecipeDialog = ({
     }
   }, [autoFill]);
 
-  // useEffect(() => {
-  //   if (!recipe || !targetLang || !open || targetLang === "en") return;
-  //   const doTranslate = async () => {
-  //     try {
-  //       setIsTranslating({ title: true, ingredients: true, preparation: true });
-  //       const [title, ingredients, preparation] = await Promise.all([
-  //         translateDirectly(recipe.title, targetLang),
-  //         translateDirectly(recipe.ingredients, targetLang),
-  //         translateDirectly(recipe.preparation, targetLang),
-  //       ]);
-  //       setEditableRecipe((prev) => ({
-  //         ...prev,
-  //         title,
-  //         ingredients,
-  //         preparation,
-  //       }));
-  //     } catch (error) {
-  //       console.error("Error during translation:", error);
-  //     } finally {
-  //       setIsTranslating({ title: false, ingredients: false, preparation: false });
-  //     }
-  //   };
-  //   doTranslate();
-  // }, [recipe, targetLang, open]);
-
-  const handleChange = (field) => (event) => {
+  const handleChange = (field: keyof Recipe) => (
+    event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+  ) => {
     setEditableRecipe((prev) => ({
       ...prev,
       [field]: event.target.value,
@@ -119,7 +104,6 @@ const RecipeDialog = ({
   };
 
   const handleSave = () => {
-    console.log("Saving recipe:", editableRecipe);
     onSave(editableRecipe);
     onClose();
   };
@@ -161,7 +145,7 @@ const RecipeDialog = ({
         try {
           [translatedTitle, translatedIngredients, translatedPreparation] =
             await Promise.all([
-              translateDirectly(data.title , i18n.language),
+              translateDirectly(data.title, i18n.language),
               translateDirectly(data.ingredients, i18n.language),
               translateDirectly(data.preparation, i18n.language),
             ]);
@@ -184,7 +168,7 @@ const RecipeDialog = ({
     }
   };
 
-  const handleRecreateImage = async (text = editableRecipe?.title) => {
+  const handleRecreateImage = async (text: string = editableRecipe?.title) => {
     setIsLoadingImage(true);
     try {
       const authToken = localStorage.getItem("authToken") || "1234";
@@ -215,7 +199,7 @@ const RecipeDialog = ({
 
   const handleDelete = () => {
     if (onDelete) {
-      editableRecipe._id = recipe?._id;
+      setEditableRecipe((prev) => ({ ...prev, _id: recipe?._id }));
       onDelete(editableRecipe);
       onClose();
     }
@@ -230,7 +214,6 @@ const RecipeDialog = ({
           translateDirectly(recipe.ingredients, targetLang),
           translateDirectly(recipe.preparation, targetLang),
         ]);
-        setTranslatedRecipe({ title, ingredients, preparation });
         setEditableRecipe((prev) => ({
           ...prev,
           title,
@@ -250,7 +233,7 @@ const RecipeDialog = ({
         ingredients: recipe?.ingredients || "",
         preparation: recipe?.preparation || "",
         imageUrl: recipe?.imageUrl || "",
-        _id: recipe?._id || "",
+        _id: recipe?._id,
       });
       setShowTranslated(false);
     }

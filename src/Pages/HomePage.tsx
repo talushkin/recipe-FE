@@ -7,68 +7,69 @@ import { useTranslation } from "react-i18next";
 import { ThemeProvider } from "styled-components";
 import { lightTheme, darkTheme } from "../components/themes";
 import GlobalStyle from "../components/GlobalStyle";
-import * as store from "../utils/storage"; // adjust path if needed
-import { useNavigate } from "react-router-dom";
-import FooterBar from "../components/FooterBar.jsx"; // <-- Add this import
+// import { useNavigate } from "react-router-dom"; // unused
+import FooterBar from "../components/FooterBar";
+import type { Category, Recipe, SiteData } from "../utils/storage";
+import type { i18n as I18nType } from "i18next";
 
-export default function Main(props) {
-  const { setSelectedRecipe, selectedRecipe, newRecipe, recipes, setRecipes, selectedCategory, setSelectedCategory } = props;
-  const [menuOpen, setMenuOpen] = useState(false);
-  const { i18n } = useTranslation();
-  const [isDarkMode, setIsDarkMode] = useState(false);
-  const [desktop, setDesktop] = useState(window.innerWidth > 768); // Check if desktop
-  const navigate = useNavigate();
+interface HomePageProps {
+  setSelectedRecipe: (recipe: Recipe | null) => void;
+  selectedRecipe: Recipe | null;
+  newRecipe?: Recipe | null;
+  recipes: SiteData;
+  setRecipes: (recipes: SiteData) => void;
+  selectedCategory: Category | null;
+  setSelectedCategory: (cat: Category | null) => void;
+}
 
-  // Add toggleDarkMode function
-  const toggleDarkMode = () => {
+export default function Main(props: HomePageProps) {
+  const { setSelectedRecipe, selectedRecipe, newRecipe, recipes, selectedCategory, setSelectedCategory } = props;
+  const [menuOpen, setMenuOpen] = useState<boolean>(false);
+  const { i18n } = useTranslation() as { i18n: I18nType };
+  const [isDarkMode, setIsDarkMode] = useState<boolean>(false);
+  const [desktop, setDesktop] = useState<boolean>(typeof window !== 'undefined' ? window.innerWidth > 768 : true);
+
+  const toggleDarkMode = (): void => {
     setIsDarkMode((prev) => !prev);
   };
 
-  // Define the handleHamburgerClick function
-  const handleHamburgerClick = () => {
-    console.log("Hamburger clicked", desktop);
-    console.log("menuOpen", menuOpen);
+  const handleHamburgerClick = (): void => {
     if (desktop) {
-      setMenuOpen(true); // Always open on desktop
+      setMenuOpen(true);
       return;
     }
-    setMenuOpen((prevMenuOpen) => !prevMenuOpen); // Toggle the menu state
+    setMenuOpen((prevMenuOpen) => !prevMenuOpen);
     if (!menuOpen) {
-      window.scrollTo({ top: 0, behavior: 'smooth' }); // Scroll to top when opening
-      console.log("Should show the menu", menuOpen);
+      window.scrollTo({ top: 0, behavior: 'smooth' });
     }
   };
 
   useEffect(() => {
-    const handleResize = () => {
-      setDesktop(window.innerWidth > 768); // Update desktop state based on window width
+    const handleResize = (): void => {
+      setDesktop(window.innerWidth > 768);
     };
-    handleResize(); // Initial check on mount
-    window.addEventListener("resize", handleResize); // Add event listener for window resize
-  }, [window.innerWidth]);
+    handleResize();
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, [setDesktop]);
 
-  // Helper to detect mobile
   const isMobile = !desktop;
 
   return (
     <ThemeProvider theme={isDarkMode ? darkTheme : lightTheme}>
       <div className="App">
-        <GlobalStyle />
-
+        <GlobalStyle theme={isDarkMode ? darkTheme : lightTheme} />
         <div className="TOP">
           <HeaderBar
             desktop={desktop}
-            logo={"https://vt-photos.s3.amazonaws.com/recipe-app-icon-generated-image.png"}
+            logo={recipes.header?.logo}
             onHamburgerClick={handleHamburgerClick}
-            pages={recipes?.site?.pages}
+            categories={recipes.categories}
             isDarkMode={isDarkMode}
-            data={recipes}
-            toggleDarkMode={toggleDarkMode}
             setSelectedCategory={setSelectedCategory}
             setSelectedRecipe={setSelectedRecipe}
             selectedRecipe={selectedRecipe}
-            selectedCategory={selectedCategory}
-            showLangAndTheme={!isMobile} // Pass prop to hide on mobile
+            newRecipe={newRecipe}
           />
         </div>
         <div className="container-fluid ps-0 pe-0">
@@ -80,30 +81,22 @@ export default function Main(props) {
               <NavMenu
                 isDarkMode={isDarkMode}
                 toggleDarkMode={toggleDarkMode}
-                pages={recipes?.site?.pages}
-                isOpen={menuOpen || desktop}
+                categories={recipes.categories}
+                isOpen={menuOpen}
                 onSelect={setSelectedCategory}
-                editCategories={false}
-                data={recipes}
                 desktop={desktop}
                 language={i18n.language}
-                setSelectedRecipe={setSelectedRecipe}
-                selectedRecipe={selectedRecipe}
-                showLangAndTheme={!isMobile} // Hide from menu on mobile
                 onHamburgerClick={handleHamburgerClick}
               />
             </div>
-
             <div className="main-content col">
               {selectedCategory && (
                 <MainContent
                   selectedCategory={selectedCategory}
                   selectedRecipe={selectedRecipe}
                   addRecipe={newRecipe}
-                  data={recipes}
                   desktop={desktop}
                   isDarkMode={isDarkMode}
-                  setSelectedRecipe={setSelectedRecipe}
                 />
               )}
             </div>
