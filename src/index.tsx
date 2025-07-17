@@ -20,6 +20,7 @@ import { Provider } from "react-redux";
 import * as storage from "./utils/storage";
 import store from "./store/store";
 import type { SiteData, Category, Recipe } from "./utils/storage";
+import Questions from "./Pages/Questions";
 
 const rootElement = document.getElementById("root") as HTMLElement;
 const root = ReactDOM.createRoot(rootElement);
@@ -106,6 +107,13 @@ function App() {
       )}
       {!loading && recipes && (
         <Routes>
+          <Route
+            path="/questions"
+            element={
+              <Questions
+              />
+            }
+          />
           <Route
             path="/"
             element={
