@@ -7,7 +7,7 @@ interface PopUpProps {
 }
 
 export default function PopUp({ show, setShowPopup, InputPlaceHolder }: PopUpProps) {
-  const [inputValue, setInputValue] = useState("");
+  const [inputValue, setInputValue] = useState<string | number | readonly string[] | undefined>([""]);
 
   if (!show) return null; // hide popup if 'show' is false
 

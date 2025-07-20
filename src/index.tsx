@@ -10,17 +10,17 @@ import {
   useNavigate,
   useParams,
 } from "react-router-dom";
-import RecipeCategory from "./Pages/RecipeCategory";
-import RecipeDetail from "./Pages/RecipeDetail";
-import AddRecipe from "./Pages/AddRecipe";
-import HomePage from "./Pages/HomePage";
+import RecipeCategory from "./pages/RecipeCategory";
+import RecipeDetail from "./pages/RecipeDetail";
+import AddRecipe from "./pages/AddRecipe";
+import HomePage from "./pages/HomePage";
 import "./styles.css";
 import { CircularProgress, Box } from "@mui/material";
 import { Provider } from "react-redux";
 import * as storage from "./utils/storage";
 import store from "./store/store";
 import type { SiteData, Category, Recipe } from "./utils/storage";
-import Questions from "./Pages/Questions";
+import Questions from "./pages/Questions";
 
 const rootElement = document.getElementById("root") as HTMLElement;
 const root = ReactDOM.createRoot(rootElement);
@@ -58,7 +58,7 @@ function App() {
         setSelectedCategory(initialCategory);
 
         if (titleParam && initialCategory.itemPage) {
-          const foundRecipe = initialCategory.itemPage.find(
+          const foundRecipe : Recipe | undefined = initialCategory.itemPage.find(
             (rec: Recipe) => encodeURIComponent(rec.title) === titleParam
           );
           if (foundRecipe) setSelectedRecipe(foundRecipe);
