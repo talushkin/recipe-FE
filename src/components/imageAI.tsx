@@ -12,7 +12,7 @@ export const generateImage = async (text: string): Promise<string | null> => {
     console.log("Requesting image for:", text);
     const res = await axios.post<{ s3Url?: string; imageUrl?: string }>(
       "https://be-tan-theta.vercel.app/api/ai/image",
-      { text },
+      {text:`Create a plated image of "${text}" on a wooden table`},
       {
         headers: {
           Authorization: `Bearer 1234`,
