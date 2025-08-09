@@ -14,16 +14,25 @@ export default function RecipeDetail(props: RecipeDetailProps) {
   const { recipes, setRecipes, setSelectedCategory, setSelectedRecipe } = props;
   const { category, title } = useParams<{ category?: string; title?: string }>();
   const categories = recipes.categories || [];
-  const selectedCategoryData = categories.find(
-    (cat: Category) => cat?.category?.toLowerCase() === category?.toLowerCase()
-  ) || null;
-  const selectedRecipeData = selectedCategoryData?.itemPage.find(
-    (recipe: Recipe) => recipe?.title?.toLowerCase() === title?.toLowerCase()
-  ) || null;
+
+  // Use decodeURIComponent to handle URL encoding properly
+  const decodedCategory = category ? decodeURIComponent(category) : "";
+  const decodedTitle = title ? decodeURIComponent(title) : "";
+
+  const selectedCategoryData =
+    categories.find(
+      (cat: Category) => cat?.category?.toLowerCase() === decodedCategory?.toLowerCase()
+    ) || null;
+  const selectedRecipeData =
+    selectedCategoryData?.itemPage.find(
+      (recipe: Recipe) => recipe?.title?.toLowerCase() === decodedTitle?.toLowerCase()
+    ) || null;
+
   React.useEffect(() => {
     setSelectedCategory(selectedCategoryData);
     setSelectedRecipe(selectedRecipeData);
   }, [category, title, setSelectedCategory, setSelectedRecipe, selectedCategoryData, selectedRecipeData]);
+
   return (
     <HomePage
       selectedCategory={selectedCategoryData}

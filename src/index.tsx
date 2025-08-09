@@ -14,6 +14,7 @@ import RecipeCategory from "./pages/RecipeCategory";
 import RecipeDetail from "./pages/RecipeDetail";
 import AddRecipe from "./pages/AddRecipe";
 import HomePage from "./pages/HomePage";
+import Hooks from "./pages/Hooks";
 import "./styles.css";
 import { CircularProgress, Box } from "@mui/material";
 import { Provider } from "react-redux";
@@ -126,6 +127,14 @@ function App() {
                 setSelectedCategory={setSelectedCategory}
                 selectedCategory={selectedCategory}
                 newRecipe={null}
+              />
+            }
+          />
+                    <Route
+            path="/hooks"
+            element={
+              <Hooks
+                
               />
             }
           />
