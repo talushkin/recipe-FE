@@ -93,7 +93,7 @@ function SortableItem({
         type="button"
         onClick={() => onSelect(item)}
         className="flex-1 flex items-center nav-link-button"
-        style={{ background: "none", border: "none", padding: 0, cursor: "pointer" }}
+        style={{ color:"white", background: "none", border: "none", padding: 0, cursor: "pointer" }}
       >
         {editCategories && index + 1 + ". "}
         <img
@@ -110,7 +110,7 @@ function SortableItem({
         />
         {translatedCategory || item.category}{" "}
         <span
-          className="text-gray-500 ml-2"
+          className="text-white-500 ml-2"
         >
           ({recipeCount})
         </span>

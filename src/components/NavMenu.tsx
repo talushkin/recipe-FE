@@ -65,6 +65,23 @@ export default function NavMenu({ categories, onSelect, isOpen, language, deskto
       <Button
         variant="contained"
         sx={{
+          backgroundColor: "#9b59b6",
+          color: "white",
+          marginBottom: "8px",
+          "&:hover": {
+            backgroundColor: "#8e44ad",
+          },
+        }}
+        onClick={() => {
+          navigate('/questions');
+          onHamburgerClick();
+        }}
+      >
+        📝 Quiz Questions
+      </Button>
+      <Button
+        variant="contained"
+        sx={{
           backgroundColor: "darkgreen",
           "&:hover": {
             backgroundColor: "green",

@@ -22,6 +22,7 @@ import store from "./store/store";
 import type { SiteData, Category, Recipe } from "./utils/storage";
 import Questions from "./pages/Questions";
 
+
 const rootElement = document.getElementById("root") as HTMLElement;
 const root = ReactDOM.createRoot(rootElement);
 
