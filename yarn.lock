@@ -13405,6 +13405,7 @@ __metadata:
     "@emotion/styled": "npm:^11.14.1"
     "@mui/icons-material": "npm:^7.3.1"
     "@mui/material": "npm:^7.3.1"
+    "@popperjs/core": "npm:^2.11.8"
     "@reduxjs/toolkit": "npm:^2.8.2"
     "@types/react": "npm:^19.1.8"
     "@types/react-dom": "npm:^19.1.6"
