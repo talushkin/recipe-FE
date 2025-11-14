@@ -1,7 +1,12 @@
 import React, { useState } from 'react';
 import axios from 'axios';
 
+// Use LOCAL_URL for local backend testing, BASE_URL for production
+const LOCAL_URL = 'http://localhost:5000';
 const BASE_URL = 'https://be-tan-theta.vercel.app';
+
+// Change this to LOCAL_URL for local testing
+const API_URL = BASE_URL; // <-- switch to BASE_URL for production
 
 function SqlFreeQ() {
   const [freeText, setFreeText] = useState('');
@@ -23,14 +28,10 @@ function SqlFreeQ() {
       if (csvFiles.length > 0 && csvContents.length === csvFiles.length) {
         requestBody.csv = csvFiles.map((file, idx) => ({ name: file.name, content: csvContents[idx] }));
       }
-      // Log the POST body for debugging
-      console.log('[SQL-FREEQ] POST body:', JSON.stringify(requestBody, null, 2));
-      if (Array.isArray(requestBody.csv)) {
-        console.log('[SQL-FREEQ] CSV array:', requestBody.csv);
-      }
-      console.log('[SQL-FREEQ] q:', requestBody.q);
+      // Log the request body before sending
+      console.log('[SQL-FREEQ] Request body:', requestBody);
       const res = await axios.post(
-        `${BASE_URL}/api/ai/get-sql-q`,
+        `${API_URL}/api/ai/get-sql-q`,
         requestBody,
         {
           headers: {
