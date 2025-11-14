@@ -1,0 +1,16 @@
+{
+  "files": {
+    "main.css": "/static/css/main.4f7906f1.css",
+    "main.js": "/static/js/main.16a75bbe.js",
+    "static/media/leaf-right.png": "/static/media/leaf-right.b10debc2c3a5c4e57538.png",
+    "static/media/leaf-left.png": "/static/media/leaf-left.ead68244e3c93c1f032e.png",
+    "static/media/cardboard-texture.jpg": "/static/media/cardboard-texture.e6b176cf47d8f5ea1496.jpg",
+    "index.html": "/index.html",
+    "main.4f7906f1.css.map": "/static/css/main.4f7906f1.css.map",
+    "main.16a75bbe.js.map": "/static/js/main.16a75bbe.js.map"
+  },
+  "entrypoints": [
+    "static/css/main.4f7906f1.css",
+    "static/js/main.16a75bbe.js"
+  ]
+}
