@@ -82,6 +82,23 @@ export default function NavMenu({ categories, onSelect, isOpen, language, deskto
       <Button
         variant="contained"
         sx={{
+          backgroundColor: "#2196f3",
+          color: "white",
+          marginBottom: "8px",
+          "&:hover": {
+            backgroundColor: "#1976d2",
+          },
+        }}
+        onClick={() => {
+          navigate('/explain-sql');
+          onHamburgerClick();
+        }}
+      >
+        💾 SQL Query Generator
+      </Button>
+      <Button
+        variant="contained"
+        sx={{
           backgroundColor: "darkgreen",
           "&:hover": {
             backgroundColor: "green",

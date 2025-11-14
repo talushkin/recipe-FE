@@ -68,8 +68,7 @@ function Questions() {
 
   useEffect(() => {
     fetchQuestions();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, []); // Empty dependency array is intentional for initial fetch only
 
   const handleSend = () => {
     if (selected !== null) {

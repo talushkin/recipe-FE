@@ -22,6 +22,7 @@ import * as storage from "./utils/storage";
 import store from "./store/store";
 import type { SiteData, Category, Recipe } from "./utils/storage";
 import Questions from "./pages/Questions";
+import SqlExplain from "./pages/SqlExplain";
 
 
 const rootElement = document.getElementById("root") as HTMLElement;
@@ -114,6 +115,12 @@ function App() {
             element={
               <Questions
               />
+            }
+          />
+          <Route
+            path="/explain-sql"
+            element={
+              <SqlExplain />
             }
           />
           <Route
