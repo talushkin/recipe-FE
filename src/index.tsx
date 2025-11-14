@@ -21,6 +21,8 @@ import * as storage from "./utils/storage";
 import store from "./store/store";
 import type { SiteData, Category, Recipe } from "./utils/storage";
 import Questions from "./Pages/Questions";
+import SqlXplace from "./Pages/SqlXplace";
+import SqlFreeQ from "./Pages/SqlFreeQ";
 
 const rootElement = document.getElementById("root") as HTMLElement;
 const root = ReactDOM.createRoot(rootElement);
@@ -111,6 +113,20 @@ function App() {
             path="/questions"
             element={
               <Questions
+              />
+            }
+          />
+          <Route
+            path="/sql-xplace"
+            element={
+              <SqlXplace
+              />
+            }
+          />
+                    <Route
+            path="/sql-free-q"
+            element={
+              <SqlFreeQ
               />
             }
           />
