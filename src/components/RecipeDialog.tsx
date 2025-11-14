@@ -358,7 +358,8 @@ const RecipeDialog = ({
               >
                 ENGLISH
               </Button>
-              <Button
+              {targetLang !== "en"&&(
+                <Button
                 variant={showTranslated ? "contained" : "outlined"}
                 size="small"
                 sx={{
@@ -374,10 +375,9 @@ const RecipeDialog = ({
                 }}
                 disabled={targetLang === "en"}
               >
-                {targetLang === "en"
-                  ? "ENGLISH"
-                  : t(targetLang.charAt(0).toUpperCase() + targetLang.slice(1))}
+                {targetLang}
               </Button>
+              )}
             </Box>
 
             <img

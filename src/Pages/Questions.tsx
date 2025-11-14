@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 
 const BASE_URL = 'https://be-tan-theta.vercel.app';
-
+const LOCAL_URL = "http://localhost:5000";
 function Questions() {
   const [questions, setQuestions] = useState<any[]>([]);
   const [current, setCurrent] = useState(0);
@@ -12,16 +12,18 @@ function Questions() {
   const [error, setError] = useState<string | null>(null);
   const [correctCount, setCorrectCount] = useState(0);
   const [answeredCount, setAnsweredCount] = useState(0);
+  const [oldQs, setOldQs] = useState<any[]>([]);
 
   const fetchQuestions = async () => {
     setLoading(true);
     setError(null);
     try {
       const res = await axios.post(
-        `${BASE_URL}/api/ai/react-questionaire`,
+        `${LOCAL_URL}/api/ai/react-questionaire`,
         {
-          numberOfQuestions: 5,
-          numberOfPossibleAnswers: 4
+          numberOfQuestions: 10,
+          numberOfPossibleAnswers: 4,
+          oldQs: oldQs // Send previously asked questions to avoid repetition
         },
         {
           headers: {
@@ -48,6 +50,8 @@ function Questions() {
       }));
       if (formatted.length) {
         setQuestions(formatted);
+        // Add new questions to oldQs array
+        setOldQs(prev => [...prev, ...formatted]);
         setCurrent(0);
         setSelected(null);
         setSubmitted(false);
@@ -64,8 +68,7 @@ function Questions() {
 
   useEffect(() => {
     fetchQuestions();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, []); // Empty dependency array is intentional for initial fetch only
 
   const handleSend = () => {
     if (selected !== null) {
@@ -93,6 +96,7 @@ function Questions() {
     setCurrent(0);
     setSelected(null);
     setSubmitted(false);
+    setOldQs([]); // Clear old questions when resetting
     fetchQuestions();
   };
 

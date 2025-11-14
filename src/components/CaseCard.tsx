@@ -4,6 +4,8 @@ import { translateDirectly } from "./translateAI";
 import dayjs from "dayjs";
 import type { Recipe } from "../utils/storage";
 
+// please conple
+
 interface CaseCardProps {
   item: Recipe;
   category: string;
