@@ -23,6 +23,7 @@ import type { SiteData, Category, Recipe } from "./utils/storage";
 import Questions from "./Pages/Questions";
 import SqlXplace from "./Pages/SqlXplace";
 import SqlFreeQ from "./Pages/SqlFreeQ";
+import ProjectAiWordCount from "./Pages/ProjectAiWordCount";
 
 const rootElement = document.getElementById("root") as HTMLElement;
 const root = ReactDOM.createRoot(rootElement);
@@ -123,10 +124,17 @@ function App() {
               />
             }
           />
-                    <Route
+          <Route
             path="/sql-free-q"
             element={
               <SqlFreeQ
+              />
+            }
+          />
+          <Route
+            path="/project-ai-wordcount"
+            element={
+              <ProjectAiWordCount
               />
             }
           />
